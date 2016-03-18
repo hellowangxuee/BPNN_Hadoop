@@ -1,6 +1,7 @@
 import Jampack.JampackException;
 import Jampack.Zmat;
 
+import MapReduce.BPTrain;
 import NeuralNetwork.ArtificialNeuralNetwork;
 import NeuralNetwork.NeuronLayer;
 import NeuralNetwork.SingleNeuron;
@@ -24,7 +25,7 @@ import HDFS_IO.*;
  * Created by Jackie on 16/3/3.
  */
 public class test {
-    public static void main(String[] args) throws JampackException,Exception {
+    public static void main(String[] args) throws JampackException,IOException {
 //        double[][] A = {{1, 2, 3}, {2, 3, 4}, {4, 5, 6}};
 //        double[][] B = {{3, 2, 2.5}, {1.3, 3.2, 2.3}, {5.2, 1.2, 4}};
 //        Zmat matA = new Zmat(A);
@@ -92,8 +93,9 @@ public class test {
 //
 //        ArtificialNeuralNetwork TestAnn=new ArtificialNeuralNetwork("/home/mlx/Documents/testANN");
 //        int a=1;
-        String uri = "hdfs://localhost:9000/user/mlx/testANN";
-        String des = "hdfs://localhost:9000/user/mlx/testANN-v1";
+        String old = "hdfs://localhost:9000/user/mlx/testANN";
+        String change = "hdfs://localhost:9000/user/mlx/ChangeValue";
+        String save="hdfs://localhost:9000/user/mlx/newANN";
         //读取hadoop文件系统的配置
 //        Configuration conf = new Configuration();
 //        conf.set("hadoop.job.ugi", "hadoop-user,hadoop-user");
@@ -118,9 +120,9 @@ public class test {
 //        finally{
 //            IOUtils.closeStream(in);
 //        }
-        String[] Content = ReadNWrite.hdfs_Read(uri);
-        ReadNWrite.hdfs_Write(Content, des);
 
+        String[] a="/user/mlx/hello".split("/");
+        int b=1;
     }
     public static Vector readTxtFile(String filePath){
         Vector vet =new Vector();
@@ -154,5 +156,6 @@ public class test {
     public static int getRandomNum(int m,int n) {
         return (m + (int) (Math.random() * (n - m + 1)));
     }
+
 
 }

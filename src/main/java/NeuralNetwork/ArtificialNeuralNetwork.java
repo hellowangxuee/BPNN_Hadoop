@@ -4,6 +4,7 @@ import HDFS_IO.ReadNWrite;
 import Jampack.*;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.DoubleBuffer;
 import java.util.Vector;
 import FileIO.*;
@@ -11,7 +12,7 @@ import FileIO.*;
 /**
  * Created by Jackie on 16/3/3.
  */
-public class ArtificialNeuralNetwork {
+public class ArtificialNeuralNetwork implements Serializable {
     private int LayerNum = 2;
     private NeuronLayer[] ANN = null;
     private Vector TempReult = null;
@@ -25,63 +26,61 @@ public class ArtificialNeuralNetwork {
             this.ANN[i] = new NeuronLayer(NN_arr[i]);
         }
     }
-    public ArtificialNeuralNetwork(int InputNum,int LayerNum,int[] NumEachLayer,int[] IndexEachLayer){
-        this.LayerNum=LayerNum;
-        this.ANN=new NeuronLayer[LayerNum];
+
+    public ArtificialNeuralNetwork(int InputNum, int LayerNum, int[] NumEachLayer, int[] IndexEachLayer) {
+        this.LayerNum = LayerNum;
+        this.ANN = new NeuronLayer[LayerNum];
         this.TempReult = new Vector();
 
-        this.ANN[0]=new NeuronLayer(InputNum,NumEachLayer[0],IndexEachLayer[0]);
+        this.ANN[0] = new NeuronLayer(InputNum, NumEachLayer[0], IndexEachLayer[0]);
 
-        for(int i=1;i<LayerNum;i++){
-            this.ANN[i]=new NeuronLayer(NumEachLayer[i-1],NumEachLayer[i],IndexEachLayer[i]);
+        for (int i = 1; i < LayerNum; i++) {
+            this.ANN[i] = new NeuronLayer(NumEachLayer[i - 1], NumEachLayer[i], IndexEachLayer[i]);
         }
     }
 
     public ArtificialNeuralNetwork(String FilePath) throws IOException {
-        String[] NNfile= ReadNWrite.hdfs_Read(FilePath);
+        String[] NNfile = ReadNWrite.hdfs_Read(FilePath);
 
-        this.LayerNum=Integer.parseInt(NNfile[0]);
-        this.ANN=new NeuronLayer[this.LayerNum];
-        this.TempReult=new Vector();
+        this.LayerNum = Integer.parseInt(NNfile[0]);
+        this.ANN = new NeuronLayer[this.LayerNum];
+        this.TempReult = new Vector();
 
-        int InputNum=Integer.parseInt(NNfile[1]);
-        String[] NumEachLayer=(NNfile[2].split("\t"));
-        String[] IndexEachLayer=(NNfile[3].split("\t"));
+        int InputNum = Integer.parseInt(NNfile[1]);
+        String[] NumEachLayer = (NNfile[2].split("\t"));
+        String[] IndexEachLayer = (NNfile[3].split("\t"));
 
-        int i=4;
-        for(int j=0;j<this.LayerNum;j++) {
+        int i = 4;
+        for (int j = 0; j < this.LayerNum; j++) {
             String[][] W_martirx;
-            if(j==0) {
+            if (j == 0) {
                 W_martirx = new String[Integer.parseInt(NumEachLayer[j])][InputNum];
-            }
-            else {
+            } else {
                 W_martirx = new String[Integer.parseInt(NumEachLayer[j])][Integer.parseInt(NumEachLayer[j - 1])];
             }
-            String[] B_martrix=new String[Integer.parseInt(NumEachLayer[j])];
-            for (int p=0;i < NNfile.length; i++) {
-                String[] TextLine=NNfile[i].split("\t");
-                if(TextLine[0].equals("*")){
-                    for(int t=1;t<TextLine.length;t++){
-                        B_martrix[t-1]=TextLine[t];
+            String[] B_martrix = new String[Integer.parseInt(NumEachLayer[j])];
+            for (int p = 0; i < NNfile.length; i++) {
+                String[] TextLine = NNfile[i].split("\t");
+                if (TextLine[0].equals("*")) {
+                    for (int t = 1; t < TextLine.length; t++) {
+                        B_martrix[t - 1] = TextLine[t];
                     }
-                }
-                else if(TextLine[0].equals("-")){
+                } else if (TextLine[0].equals("-")) {
                     i++;
                     break;
-                }
-                else{
-                    for(int t=0;t<TextLine.length;t++){
-                        W_martirx[p][t]=TextLine[t];
+                } else {
+                    for (int t = 0; t < TextLine.length; t++) {
+                        W_martirx[p][t] = TextLine[t];
                     }
-                    p+=1;
+                    p += 1;
                 }
 
             }
-            this.ANN[j]=new NeuronLayer(W_martirx,B_martrix,IndexEachLayer[j]);
+            this.ANN[j] = new NeuronLayer(W_martirx, B_martrix, IndexEachLayer[j]);
         }
     }
 
-    public double[][] getForwardResult(double[][] InputVec){
+    public double[][] getForwardResult(double[][] InputVec) {
         TempReult.add(InputVec);
         double[][] Result = ANN[0].generateOutput(InputVec);
         TempReult.add(Result);
@@ -94,19 +93,18 @@ public class ArtificialNeuralNetwork {
     }
 
 
-
-    public NeuronLayer[] getBackwardChange(double[][] ErrVec,double LearnRate){
+    public NeuronLayer[] getBackwardChange(double[][] ErrVec, double LearnRate) {
         try {
             Zmat F;
             Zmat s;
             NeuronLayer[] WeightChangeArr = new NeuronLayer[this.LayerNum];
 
-            F = getMatF(TempReult,LayerNum, ANN[LayerNum - 1].getNeuronNum(), ANN[LayerNum-1].getTF_index());
+            F = getMatF(TempReult, LayerNum, ANN[LayerNum - 1].getNeuronNum(), ANN[LayerNum - 1].getTF_index());
             s = Times.o(new Z(-2, 0), Times.o(F, new Zmat(ErrVec)));
 
             double[][] thisLayerInput = new double[1][ANN[LayerNum - 1].getInputNum()];
             for (int j = 0; j < ANN[LayerNum - 1].getInputNum(); j++) {
-                thisLayerInput[0][j] = ((double[][])(TempReult.get(LayerNum - 1)))[j][0];//   TempReult[LayerNum - 1].get(j);
+                thisLayerInput[0][j] = ((double[][]) (TempReult.get(LayerNum - 1)))[j][0];//   TempReult[LayerNum - 1].get(j);
             }
 
             Zmat WeightChange = Times.o(new Z(-LearnRate, 0), Times.o(s, new Zmat(thisLayerInput)));
@@ -120,7 +118,7 @@ public class ArtificialNeuralNetwork {
 
                 thisLayerInput = new double[1][ANN[i].getInputNum()];
                 for (int j = 0; j < ANN[i].getInputNum(); j++) {
-                    thisLayerInput[0][j] = ((double[][])(TempReult.get(i)))[j][0];
+                    thisLayerInput[0][j] = ((double[][]) (TempReult.get(i)))[j][0];
                 }
 
                 WeightChange = Times.o(new Z(-LearnRate, 0), Times.o(s, new Zmat(thisLayerInput)));
@@ -130,81 +128,84 @@ public class ArtificialNeuralNetwork {
             }
             this.TempReult.clear();
             return WeightChangeArr;
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e.toString());
             return null;
         }
 
     }
 
-    public boolean updateWeightNetwork(NeuronLayer[] ChangeAmount){
-        try{
-            for(int i=0;i<ANN.length;i++){
-                ANN[i].updateWeightnBias(ChangeAmount[i].getWeightMat(),ChangeAmount[i].getBiasVec());
+    public boolean updateWeightNetwork(NeuronLayer[] ChangeAmount) {
+        try {
+            for (int i = 0; i < ANN.length; i++) {
+                ANN[i].updateWeightnBias(ChangeAmount[i].getWeightMat(), ChangeAmount[i].getBiasVec());
             }
             return true;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println(e.toString());
             return false;
         }
     }
 
-    public boolean updateWeightNetwork(ArtificialNeuralNetwork Another){
-        try{
-            for(int i=0;i<ANN.length;i++){
-                ANN[i].updateWeightnBias(Another.getANN()[i].getWeightMat(),Another.getANN()[i].getBiasVec());
+    public boolean updateWeightNetwork(ArtificialNeuralNetwork Another) {
+        try {
+            for (int i = 0; i < ANN.length; i++) {
+                ANN[i].updateWeightnBias(Another.getANN()[i].getWeightMat(), Another.getANN()[i].getBiasVec());
             }
             return true;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println(e.toString());
             return false;
         }
     }
 
-    public void clearNetwork(){
-        for(int i=0;i<ANN.length;i++){
+    public void updateCertainWeight(int LayNum, int NeuronNum, int WeightNum, double value) {
+        ANN[LayNum].updateCertainWeight(NeuronNum, WeightNum, value);
+    }
+
+    public void updateCertainBias(int LayNum, int NeuronNum, double value) {
+        ANN[LayNum].updateCertainBias(NeuronNum, value);
+    }
+
+    public void clearNetwork() {
+        for (int i = 0; i < ANN.length; i++) {
             ANN[i].clearLayer();
         }
     }
 
-    public void averageNetwork(int Q){
-        try{
-            for(int i=0;i<ANN.length;i++){
+    public void averageNetwork(int Q) {
+        try {
+            for (int i = 0; i < ANN.length; i++) {
                 ANN[i].averageLayer(Q);
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println(e.toString());
         }
     }
 
-    public Zmat getMatF(Vector Re,int IndexNeeded,int OutputNum,int TF_index) {
+    public Zmat getMatF(Vector Re, int IndexNeeded, int OutputNum, int TF_index) {
         Zmat F = new Zmat(OutputNum, OutputNum);
 
         if (TF_index == 1) {
-            double[][] ResultVec=(double[][])Re.get(IndexNeeded);
+            double[][] ResultVec = (double[][]) Re.get(IndexNeeded);
             for (int i = 0; i < OutputNum; i++) {
                 for (int j = 0; j < OutputNum; j++) {
                     if (i != j) {
-                        F.put(i+1, j+1, 0);
+                        F.put(i + 1, j + 1, 0);
                     } else {
                         double DeriveOfInput = (1 - ResultVec[i][0]) * (ResultVec[i][0]);
-                        F.put(i+1, j+1, DeriveOfInput);
+                        F.put(i + 1, j + 1, DeriveOfInput);
                     }
 
                 }
             }
-        }
-        else if (TF_index == 3) {
+        } else if (TF_index == 3) {
             for (int i = 0; i < OutputNum; i++) {
                 for (int j = 0; j < OutputNum; j++) {
                     if (i != j) {
-                        F.put(i+1, j+1, 0);
+                        F.put(i + 1, j + 1, 0);
                     } else {
-                        F.put(i+1, j+1, 1);
+                        F.put(i + 1, j + 1, 1);
                     }
 
                 }
@@ -214,12 +215,46 @@ public class ArtificialNeuralNetwork {
         return F;
     }
 
-    public NeuronLayer[] getANN(){
+    public NeuronLayer[] getANN() {
         return this.ANN;
     }
 
-    public int getLayerNum(){
+    public int getLayerNum() {
         return this.LayerNum;
     }
 
+    public String[] saveANN() {
+        int totalLineNum = 4;
+        for (int i = 0; i < this.LayerNum; i++) {
+            totalLineNum += this.ANN[i].getNeuronNum() + 2;
+        }
+        String[] ANN_content_arr = new String[totalLineNum];
+        for (int i = 0; i < ANN_content_arr.length; i++) {
+            ANN_content_arr[i] = "";
+        }
+
+        ANN_content_arr[0] = String.valueOf(this.LayerNum);
+        ANN_content_arr[1] = String.valueOf(this.ANN[0].getInputNum());
+        for (int i = 0; i < this.LayerNum; i++) {
+            ANN_content_arr[2] += String.valueOf(this.ANN[i].getNeuronNum()) + "\t";
+            ANN_content_arr[3] += String.valueOf(this.ANN[i].getTF_index()) + "\t";
+        }
+        int currentLineNum = 4;
+        for (int i = 0; i < this.LayerNum; i++) {
+            for (int j = 0; j < this.ANN[i].getNeuronNum(); j++) {
+                for (int k = 0; k < this.ANN[i].getInputNum(); k++) {
+                    ANN_content_arr[currentLineNum] += String.valueOf(this.ANN[i].getCertainWeight(j, k)) + "\t";
+                }
+                currentLineNum++;
+            }
+            ANN_content_arr[currentLineNum] += "*\t";
+            for (int j = 0; j < this.ANN[i].getNeuronNum(); j++) {
+                ANN_content_arr[currentLineNum] += String.valueOf(this.ANN[i].getCertainBias(j)) + "\t";
+            }
+            currentLineNum++;
+            ANN_content_arr[currentLineNum] = "-";
+            currentLineNum++;
+        }
+        return ANN_content_arr;
+    }
 }

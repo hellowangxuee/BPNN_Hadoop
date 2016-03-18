@@ -16,16 +16,23 @@ public class BPTrain_Reduce extends
 
     public void reduce(Text key, Iterable<DoubleWritable> values, Context context)
             throws IOException, InterruptedException {
+        if (key.toString().equals("SquareError")) {
+            double SumOfSquareError = 0.0;
+            for (DoubleWritable val : values) {
+                SumOfSquareError += val.get();
+            }
+            context.write(new Text("TotalSquareError"), new DoubleWritable(SumOfSquareError));
+        } else {
+            int NumOfWeightChanges = 0;
+            double SumOfWeightChanges = 0.0;
 
-        int NumOfWeightChanges = 0;
-        double SumOfWeightChanges = 0.0;
+            for (DoubleWritable val : values) {
+                NumOfWeightChanges++;
+                SumOfWeightChanges += val.get();
+            }
+            double AveOfWeightChanges = SumOfWeightChanges / NumOfWeightChanges;
 
-        for (DoubleWritable val : values) {
-            NumOfWeightChanges++;
-            SumOfWeightChanges += val.get();
+            context.write(key, new DoubleWritable(AveOfWeightChanges));
         }
-        double AveOfWeightChanges = SumOfWeightChanges / NumOfWeightChanges;
-
-        context.write(key, new DoubleWritable(AveOfWeightChanges));
     }
 }

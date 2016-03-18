@@ -138,6 +138,14 @@ public class NeuronLayer {
         }
     }
 
+    public void updateCertainWeight(int i,int j,double value) {
+        WeightMat[i][j] += value;
+    }
+
+    public void updateCertainBias(int i,double value) {
+        BiasVec[i][0] += value;
+    }
+
     public void clearLayer(){
         for (int i = 0; i < WeightMat.length; i++) {
             for (int j = 0; j < WeightMat[i].length; j++) {
@@ -178,7 +186,7 @@ public class NeuronLayer {
     }
 
     public double getCertainBias(int i) {
-        return this.WeightMat[i][0];
+        return this.BiasVec[i][0];
     }
 
     public int getNeuronNum(){

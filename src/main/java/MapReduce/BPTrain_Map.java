@@ -9,6 +9,9 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobConfigurable;
+import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -18,7 +21,10 @@ import org.apache.hadoop.mapreduce.lib.join.StreamBackedIterator;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.URLDecoder;
 import java.util.StringTokenizer;
 
 import NeuralNetwork.*;
@@ -33,9 +39,18 @@ public class BPTrain_Map extends
 
     private Text Windex = new Text();
     private Text Bindex = new Text();
+    private String ANN_path = "";
+
+    protected void getANNPath(Context context) throws IOException, InterruptedException {
+        Configuration conf = context.getConfiguration();
+        ANN_path = conf.get("ThisIterationPath");
+    }
 
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
+
+        getANNPath(context);
+
         //pure text to String
         String line = value.toString();
 
@@ -56,7 +71,7 @@ public class BPTrain_Map extends
             double alpha = 0.1;
 
             //establish a ANN from existing file
-            ArtificialNeuralNetwork TrainingANN = new ArtificialNeuralNetwork("hdfs://localhost:9000/user/mlx/testANN");
+            ArtificialNeuralNetwork TrainingANN = new ArtificialNeuralNetwork(ANN_path);
 //            int InputNum = 1;
 //            int LayerNum = 2;
 //            int[] NumEachLayer = {3, 1};
@@ -74,8 +89,8 @@ public class BPTrain_Map extends
             for (int i = 0; i < WeightChangeArr.length; i++) {
                 for (int j = 0; j < WeightChangeArr[i].getNeuronNum(); j++) {
                     for (int k = 0; k < WeightChangeArr[i].getInputNum(); k++) {
-                        String WeightIndex = "W-" + String.valueOf(i + 1) + "-";
-                        WeightIndex += String.valueOf(j) + "," + String.valueOf(k);
+                        String WeightIndex = "W-" + String.valueOf(i) + "-";
+                        WeightIndex += String.valueOf(j) + "-" + String.valueOf(k);
                         Windex.set(WeightIndex);
                         context.write(Windex, new DoubleWritable(WeightChangeArr[i].getCertainWeight(j, k)));
                     }
@@ -84,12 +99,13 @@ public class BPTrain_Map extends
 
             for (int i = 0; i < WeightChangeArr.length; i++) {
                 for (int j = 0; j < WeightChangeArr[i].getNeuronNum(); j++) {
-                    String BiasIndex = "B-" + String.valueOf(i + 1) + "-";
+                    String BiasIndex = "B-" + String.valueOf(i) + "-";
                     BiasIndex += String.valueOf(j);
                     Bindex.set(BiasIndex);
                     context.write(Bindex, new DoubleWritable(WeightChangeArr[i].getCertainBias(j)));
                 }
             }
+            context.write(new Text("SquareError"), new DoubleWritable(ErrVec[0][0] * ErrVec[0][0]));
         }
     }
 }
