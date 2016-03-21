@@ -43,7 +43,7 @@ public class BPTrain_Map extends
 
     protected void getANNPath(Context context) throws IOException, InterruptedException {
         Configuration conf = context.getConfiguration();
-        ANN_path = conf.get("ThisIterationPath");
+        this.ANN_path = conf.get("ThisIterationPath");
     }
 
     public void map(LongWritable key, Text value, Context context)
@@ -72,12 +72,6 @@ public class BPTrain_Map extends
 
             //establish a ANN from existing file
             ArtificialNeuralNetwork TrainingANN = new ArtificialNeuralNetwork(ANN_path);
-//            int InputNum = 1;
-//            int LayerNum = 2;
-//            int[] NumEachLayer = {3, 1};
-//            int[] IndexEachLayer = {1, 3};
-//
-//            ArtificialNeuralNetwork TrainingANN = new ArtificialNeuralNetwork(InputNum, LayerNum, NumEachLayer, IndexEachLayer);
 
             double[][] ForwardResult = TrainingANN.getForwardResult(InputVec);
             double[][] ErrVec = new double[ForwardResult.length][1];

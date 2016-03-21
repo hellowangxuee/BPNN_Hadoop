@@ -3,6 +3,7 @@ package HDFS_IO;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
+import org.apache.hadoop.hdfs.protocol.datatransfer.PacketHeader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.apache.hadoop.fs.Path;
@@ -16,6 +17,18 @@ import java.net.URI;
  */
 public class ReadNWrite {
     static Logger logger = null;
+
+
+    public static boolean hdfs_isFileExist(String filePath) throws IOException {
+        Configuration conf = new Configuration();
+        FileSystem fs = FileSystem.get(conf);
+        Path inFile = new Path(filePath);
+        if (!fs.exists(inFile)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 
     public static String[] hdfs_Read(String filePath) throws IOException {
         String[] ContentArr = null;

@@ -10,6 +10,7 @@
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/MaxEig.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Zchol.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Block.java
+/home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/HDFS_IO/ReadNWrite.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Zhess.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Zqrd.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Inv.java
@@ -36,6 +37,7 @@
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Merge.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Minus.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Swap.java
+/home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/test2.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Ztest.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Pivot.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Plus.java

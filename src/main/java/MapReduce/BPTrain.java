@@ -49,29 +49,56 @@ public class BPTrain {
         return job;
     }
 
-    public static void updateANN(String oldANNPath,String WeightChangePath,String SavePath) throws IOException{
+    private static String fullStringNum(int n){
+        if(0<=n && n<=9){
+            String fullStr="0000"+String.valueOf(n);
+            return fullStr;
+        }
+        else if(n<=99){
+            String fullStr="000"+String.valueOf(n);
+            return fullStr;
+        }
+        else if(n<=999){
+            String fullStr="00"+String.valueOf(n);
+            return fullStr;
+        }
+        else if(n<=9999){
+            String fullStr="0"+String.valueOf(n);
+            return fullStr;
+        }
+        else{
+            String fullStr=String.valueOf(n);
+            return fullStr;
+        }
+    }
+
+    public static void generateNewANN(String oldANNPath,String WeightChangePath,String SavePath) throws IOException{
         ArtificialNeuralNetwork oldANN=new ArtificialNeuralNetwork(oldANNPath);
-        String[] WeightChangeArr= ReadNWrite.hdfs_Read(WeightChangePath);
 
-        for(int i=0;i<WeightChangeArr.length;i++){
-            String[] IndexNChange=WeightChangeArr[i].split("\t");
-            double ChangeValue=Double.parseDouble(IndexNChange[1]);
+        int partNum=0;
+        String partPath=SavePath+"/part-r-"+fullStringNum(partNum);
+        while(ReadNWrite.hdfs_isFileExist(partPath)) {
+            String[] WeightChangeArr = ReadNWrite.hdfs_Read(WeightChangePath);
+            for (int i = 0; i < WeightChangeArr.length; i++) {
+                String[] IndexNChange = WeightChangeArr[i].split("\t");
+                double ChangeValue = Double.parseDouble(IndexNChange[1]);
 
-            String[] IndexArr=IndexNChange[0].split("-");
-            if(IndexArr.length==4) {
-                int LayNum = Integer.parseInt(IndexArr[1]);
-                int NeuronNum=Integer.parseInt(IndexArr[2]);
-                int WeightNum=Integer.parseInt(IndexArr[3]);
-                oldANN.updateCertainWeight(LayNum,NeuronNum,WeightNum,ChangeValue);
+                String[] IndexArr = IndexNChange[0].split("-");
+                if (IndexArr.length == 4) {
+                    int LayNum = Integer.parseInt(IndexArr[1]);
+                    int NeuronNum = Integer.parseInt(IndexArr[2]);
+                    int WeightNum = Integer.parseInt(IndexArr[3]);
+                    oldANN.updateCertainWeight(LayNum, NeuronNum, WeightNum, ChangeValue);
+                } else if (IndexArr.length == 3) {
+                    int LayNum = Integer.parseInt(IndexArr[1]);
+                    int NeuronNum = Integer.parseInt(IndexArr[2]);
+                    oldANN.updateCertainBias(LayNum, NeuronNum, ChangeValue);
+                } else {
+                    continue;
+                }
             }
-            else if(IndexArr.length==3){
-                int LayNum = Integer.parseInt(IndexArr[1]);
-                int NeuronNum=Integer.parseInt(IndexArr[2]);
-                oldANN.updateCertainBias(LayNum,NeuronNum,ChangeValue);
-            }
-            else{
-                continue;
-            }
+            partNum++;
+            partPath=SavePath+"/part-r-"+fullStringNum(partNum);
         }
 
         String[] new_ANN_content=oldANN.saveANN();
@@ -80,9 +107,9 @@ public class BPTrain {
     }
 
     public static void main(String[] args) throws Exception {
-        int IterationNum=50;
-        int TotalIterationNum=60;
-        String ipPrefix="hdfs://localhost:9000";
+        int IterationNum=0;
+        int TotalIterationNum=100;
+        String ipPrefix="hdfs://Master:9000";
 
         String[] pathArr=args[0].split("/");
         String pathPrefix="";
@@ -93,14 +120,21 @@ public class BPTrain {
         for(;IterationNum<TotalIterationNum;IterationNum++) {
             Configuration conf = new Configuration();
             if (IterationNum==0) {
+                int InputNum=1;
+                int LayerNum=2;
+                int[] NumEachLayer={2,1};
+                int[] IndexEachLayer={1,3};
+
+                ArtificialNeuralNetwork InitialANN=new ArtificialNeuralNetwork(InputNum,LayerNum,NumEachLayer,IndexEachLayer);
+                ReadNWrite.hdfs_Write(InitialANN.saveANN(),ipPrefix+pathPrefix+"/testANN0") ;
                 conf.set("ThisIterationPath", ipPrefix+pathPrefix+"/testANN0");
             }
             else{
                 String oldANNPath=ipPrefix+pathPrefix+"/testANN"+String.valueOf(IterationNum-1);
                 String newANNPath=ipPrefix+pathPrefix+"/testANN"+String.valueOf(IterationNum);
-                String ChangeValuePath=ipPrefix+args[1]+"-"+String.valueOf(IterationNum-1)+"/part-r-00000";
+                String ChangeValuePath=ipPrefix+args[1]+"-"+String.valueOf(IterationNum-1);
 
-                BPTrain.updateANN(oldANNPath,ChangeValuePath,newANNPath);
+                BPTrain.generateNewANN(oldANNPath,ChangeValuePath,newANNPath);
                 conf.set("ThisIterationPath",newANNPath);
             }
 

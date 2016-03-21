@@ -92,6 +92,23 @@ public class ArtificialNeuralNetwork implements Serializable {
         return Result;
     }
 
+    public double[][] getForwardResult_singleOutput(String Input){
+        String[] inputArr=Input.split("\t");
+        double Tag = Double.parseDouble(inputArr[inputArr.length - 1]);
+        double[][] InputVec = new double[inputArr.length - 1][1];
+        for (int i = 0; i < inputArr.length - 1; i++) {
+            InputVec[i][0] = Double.parseDouble(inputArr[i]);
+        }
+        TempReult.add(InputVec);
+        double[][] Result = ANN[0].generateOutput(InputVec);
+        TempReult.add(Result);
+
+        for (int i = 1; i < LayerNum; i++) {
+            Result = ANN[i].generateOutput(Result);
+            TempReult.add(Result);
+        }
+        return Result;
+    }
 
     public NeuronLayer[] getBackwardChange(double[][] ErrVec, double LearnRate) {
         try {
