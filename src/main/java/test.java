@@ -1,26 +1,11 @@
+import FileIO.FileReadNWrite;
 import Jampack.JampackException;
-import Jampack.Zmat;
 
-import MapReduce.BPTrain;
 import NeuralNetwork.ArtificialNeuralNetwork;
-import NeuralNetwork.NeuronLayer;
-import NeuralNetwork.SingleNeuron;
-import NeuralNetwork.TransFunc;
-
-import java.net.URI;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IOUtils;
-import org.omg.Messaging.SYNC_WITH_TRANSPORT;
 
 import java.io.*;
-import java.nio.DoubleBuffer;
 import java.util.*;
 
-import HDFS_IO.*;
 /**
  * Created by Jackie on 16/3/3.
  */
@@ -35,64 +20,76 @@ public class test {
 //            double a = getRan();
 //            System.out.println(a);
 //        }
-        Vector InputPair=readTxtFile("/home/mlx/Documents/TrainData");
+        Vector InputPair=readTxtFile("/home/mlx/Documents/TrainingDataset");
 
-        HashSet h=new HashSet();
-        int InputNum=1;
-        int LayerNum=2;
-        int[] NumEachLayer={3,1};
-        int[] IndexEachLayer={1,3};
+        for(int ThirNeuNum=10;2<=ThirNeuNum;ThirNeuNum--) {
+            HashSet h = new HashSet();
+            int InputNum = 41;
+            int LayerNum = 3;
+            int[] NumEachLayer = {7, ThirNeuNum, 1};
+            int[] IndexEachLayer = {1, 4, 4};
 
-        ArtificialNeuralNetwork TestWork=new ArtificialNeuralNetwork(InputNum,LayerNum,NumEachLayer,IndexEachLayer);
+            ArtificialNeuralNetwork TestWork = new ArtificialNeuralNetwork(InputNum, LayerNum, NumEachLayer, IndexEachLayer);
 
-        ArtificialNeuralNetwork BatchStoreWork=new ArtificialNeuralNetwork(InputNum,LayerNum,NumEachLayer,IndexEachLayer);
-        BatchStoreWork.clearNetwork();
+            ArtificialNeuralNetwork BatchStoreWork = new ArtificialNeuralNetwork(InputNum, LayerNum, NumEachLayer, IndexEachLayer);
+            BatchStoreWork.clearNetwork();
 
-        double[][] InputVec=new double[InputNum][1];
-        double[][] ErrVec=new double[NumEachLayer[NumEachLayer.length-1]][1];
-        double[][] ForwardResult=new double[NumEachLayer[NumEachLayer.length-1]][1];
-        double[] temp;
-        double ErrSum=0.0;
+            double[][] InputVec = new double[InputNum][1];
+            double[][] ErrVec = new double[NumEachLayer[NumEachLayer.length - 1]][1];
+            double[][] ForwardResult;
+            double[] temp;
+            double ErrSum = 0.0;
 
 
-        for(int t=0;t<150;t++) {
-            ErrSum=0.0;
-            int RandomNum=getRandomNum(0, InputPair.size() - 1);
-            h.add(RandomNum);
-            for (int i = 0; i < InputPair.size(); i++) {
-                while (!h.contains(RandomNum)) {
+            for (int t = 0; t < 150; t++) {
+                ErrSum = 0.0;
+                int RandomNum = getRandomNum(0, InputPair.size() - 1);
+                h.add(RandomNum);
+                for (int i = 0; i < InputPair.size(); i++) {
+//                if(i % 100==0 && i!=0){
+//                    BatchStoreWork.averageNetwork(100);
+//                    TestWork.updateWeightNetwork(BatchStoreWork);
+//                    BatchStoreWork.clearNetwork();
+//                }
+                    while (!h.contains(RandomNum)) {
+                        RandomNum = getRandomNum(0, InputPair.size() - 1);
+                        h.add(RandomNum);
+                    }
+                    temp = (double[]) (InputPair.get(RandomNum));
+                    for (int k = 0; k < temp.length - 1; k++) {
+                        InputVec[k][0] = temp[k];
+                    }
+                    ForwardResult = TestWork.getForwardResult(InputVec);
+                    ErrVec[0][0] = temp[temp.length - 1] - ForwardResult[0][0];
+                    ErrSum += (ErrVec[0][0]) * (ErrVec[0][0]);
+                    TestWork.updateWeightNetwork(TestWork.getBackwardChange(ErrVec, 0.1));
+                    //BatchStoreWork.updateWeightNetwork(TestWork.getBackwardChange(ErrVec, 0.5));
                     RandomNum = getRandomNum(0, InputPair.size() - 1);
                     h.add(RandomNum);
+
                 }
-                temp = (double[]) (InputPair.get(RandomNum));
-                InputVec[0][0] = temp[0];
-                ForwardResult = TestWork.getForwardResult(InputVec);
-                ErrVec[0][0] = temp[1] - ForwardResult[0][0];
-                ErrSum += (ErrVec[0][0])*(ErrVec[0][0]);
-
-                BatchStoreWork.updateWeightNetwork(TestWork.getBackwardChange(ErrVec, 0.1));
-                RandomNum = getRandomNum(0, InputPair.size() - 1);
-                h.add(RandomNum);
+                //System.out.println("Iteration:\t" + String.valueOf(t) + "\t" + String.valueOf(ErrSum));
+                h.clear();
             }
-            System.out.println("Iteration:\t"+String.valueOf(t)+"\t"+String.valueOf(ErrSum));
-            BatchStoreWork.averageNetwork(InputPair.size());
-            TestWork.updateWeightNetwork(BatchStoreWork);
-            BatchStoreWork.clearNetwork();
-            h.clear();
+            String[] FinalANN = TestWork.saveANN();
+            String savePath="/home/mlx/Documents/FaultDetectANN/FaultDetectANN-ThirNum"+String.valueOf(ThirNeuNum);
+            FileReadNWrite.LocalWriteFile(savePath, FinalANN);
+            System.out.println("ThirNum:\t"+String.valueOf(ThirNeuNum)+"\t"+String.valueOf(ErrSum));
         }
 
-        Vector TestPair=readTxtFile("/home/mlx/Documents/TestData");
-        double MSE=0.0;
-        for(int i=0;i<TestPair.size();i++) {
-            temp = (double[]) (TestPair.get(i));
-            InputVec[0][0] = temp[0];
-            ForwardResult = TestWork.getForwardResult(InputVec);
-            MSE+=(temp[1] - ForwardResult[0][0])*(temp[1] - ForwardResult[0][0]);
-            System.out.println(ForwardResult[0][0]);
-        }
-
-        System.out.println("\n");
-        System.out.println(MSE);
+//        ReadNWrite.hdfs_Write(FinalANN,"hdfs://Master:9000/user/mlx/FinalANN-1.1");
+//        Vector TestPair=readTxtFile("/home/mlx/Documents/TestData");
+//        double MSE=0.0;
+//        for(int i=0;i<TestPair.size();i++) {
+//            temp = (double[]) (TestPair.get(i));
+//            InputVec[0][0] = temp[0];
+//            ForwardResult = TestWork.getForwardResult(InputVec);
+//            MSE+=(temp[1] - ForwardResult[0][0])*(temp[1] - ForwardResult[0][0]);
+//            System.out.println(ForwardResult[0][0]);
+//        }
+//
+//        System.out.println("\n");
+//        System.out.println(MSE);
 //
 //        ArtificialNeuralNetwork TestAnn=new ArtificialNeuralNetwork("/home/mlx/Documents/testANN");
 //        int a=1;
@@ -132,10 +129,11 @@ public class test {
                 BufferedReader bufferedReader = new BufferedReader(read);
                 String lineTxt = null;
                 while((lineTxt = bufferedReader.readLine()) != null){
-                    double[] InputPair=new double[2];
                     String[] lineArr=lineTxt.split("\t");
-                    InputPair[0]=Double.parseDouble(lineArr[0]);
-                    InputPair[1]=Double.parseDouble(lineArr[1]);
+                    double[] InputPair=new double[lineArr.length];
+                    for(int k=0;k<lineArr.length;k++) {
+                        InputPair[k] = Double.parseDouble(lineArr[k]);
+                    }
                     vet.add(InputPair);
                 }
                 read.close();

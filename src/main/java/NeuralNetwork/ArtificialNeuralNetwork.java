@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.nio.DoubleBuffer;
 import java.util.Vector;
 import FileIO.*;
+import org.apache.hadoop.yarn.util.StringHelper;
 
 /**
  * Created by Jackie on 16/3/3.
@@ -40,15 +41,15 @@ public class ArtificialNeuralNetwork implements Serializable {
     }
 
     public ArtificialNeuralNetwork(String FilePath) throws IOException {
-        String[] NNfile = ReadNWrite.hdfs_Read(FilePath);
+        Vector NNfile = ReadNWrite.hdfs_Read(FilePath);
 
-        this.LayerNum = Integer.parseInt(NNfile[0]);
+        this.LayerNum = Integer.parseInt((String) NNfile.get(0));
         this.ANN = new NeuronLayer[this.LayerNum];
         this.TempReult = new Vector();
 
-        int InputNum = Integer.parseInt(NNfile[1]);
-        String[] NumEachLayer = (NNfile[2].split("\t"));
-        String[] IndexEachLayer = (NNfile[3].split("\t"));
+        int InputNum = Integer.parseInt((String) NNfile.get(1));
+        String[] NumEachLayer = (((String) NNfile.get(2)).split("\t"));
+        String[] IndexEachLayer = (((String) NNfile.get(3)).split("\t"));
 
         int i = 4;
         for (int j = 0; j < this.LayerNum; j++) {
@@ -59,13 +60,13 @@ public class ArtificialNeuralNetwork implements Serializable {
                 W_martirx = new String[Integer.parseInt(NumEachLayer[j])][Integer.parseInt(NumEachLayer[j - 1])];
             }
             String[] B_martrix = new String[Integer.parseInt(NumEachLayer[j])];
-            for (int p = 0; i < NNfile.length; i++) {
-                String[] TextLine = NNfile[i].split("\t");
+            for (int p = 0; i < NNfile.size(); i++) {
+                String[] TextLine = ((String)NNfile.get(i)).split("\t");
                 if (TextLine[0].equals("*")) {
                     for (int t = 1; t < TextLine.length; t++) {
                         B_martrix[t - 1] = TextLine[t];
                     }
-                } else if (TextLine[0].equals("-")) {
+                } else if (TextLine[0].equals("%")) {
                     i++;
                     break;
                 } else {
@@ -227,6 +228,18 @@ public class ArtificialNeuralNetwork implements Serializable {
 
                 }
             }
+        } else if (TF_index == 4) {
+            double[][] ResultVec = (double[][]) Re.get(IndexNeeded);
+            for (int i = 0; i < OutputNum; i++) {
+                for (int j = 0; j < OutputNum; j++) {
+                    if (i != j) {
+                        F.put(i + 1, j + 1, 0);
+                    } else {
+                        double DeriveOfInput = 1 / (1 / (Math.exp(ResultVec[i][0]) - 1) + 1);
+                        F.put(i + 1, j + 1, DeriveOfInput);
+                    }
+                }
+            }
         }
 
         return F;
@@ -269,7 +282,7 @@ public class ArtificialNeuralNetwork implements Serializable {
                 ANN_content_arr[currentLineNum] += String.valueOf(this.ANN[i].getCertainBias(j)) + "\t";
             }
             currentLineNum++;
-            ANN_content_arr[currentLineNum] = "-";
+            ANN_content_arr[currentLineNum] = "%";
             currentLineNum++;
         }
         return ANN_content_arr;
