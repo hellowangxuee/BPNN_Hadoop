@@ -23,6 +23,10 @@ public class ReadNWrite {
 
     public static boolean hdfs_isFileExist(String filePath) throws IOException {
         Configuration conf = new Configuration();
+
+        conf.addResource(new Path("/usr/local/hadoop/etc/hadoop/core-site.xml"));
+        conf.addResource(new Path("/usr/local/hadoop/etc/hadoop/hdfs-site.xml"));
+
         FileSystem fs = FileSystem.get(conf);
         Path inFile = new Path(filePath);
         if (!fs.exists(inFile)) {

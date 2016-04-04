@@ -18,6 +18,7 @@
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Zludpp.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Zpsdmat.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/H.java
+/home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/FileIO/FileReadNWrite.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Zsvd.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/NeuralNetwork/NeuronLayer.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/MapReduce/BPTrain_Reduce.java
@@ -26,6 +27,7 @@
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Print.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Zutmat.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Zltmat.java
+/home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/MapReduce/CGBPTrain_Map.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Norm.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/House.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Schur.java
@@ -39,6 +41,8 @@
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Swap.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/test2.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Ztest.java
+/home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/MapReduce/CGBPTrain_Reduce.java
+/home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/NeuralNetwork/LinearSearchMinumum.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Pivot.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Plus.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Parameters.java
@@ -48,4 +52,3 @@
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Z1.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/NeuralNetwork/SingleNeuron.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/transpose.java
-/home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/FileIO/FileRead.java

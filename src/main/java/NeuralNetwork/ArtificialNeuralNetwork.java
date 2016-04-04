@@ -6,9 +6,14 @@ import Jampack.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.DoubleBuffer;
+import java.util.Stack;
 import java.util.Vector;
 import FileIO.*;
+import com.sun.org.apache.regexp.internal.RE;
+import com.sun.org.apache.xerces.internal.util.URI;
+import org.apache.hadoop.metrics.spi.NullContext;
 import org.apache.hadoop.yarn.util.StringHelper;
+import org.apache.hadoop.yarn.util.SystemClock;
 
 /**
  * Created by Jackie on 16/3/3.
@@ -61,7 +66,7 @@ public class ArtificialNeuralNetwork implements Serializable {
             }
             String[] B_martrix = new String[Integer.parseInt(NumEachLayer[j])];
             for (int p = 0; i < NNfile.size(); i++) {
-                String[] TextLine = ((String)NNfile.get(i)).split("\t");
+                String[] TextLine = ((String) NNfile.get(i)).split("\t");
                 if (TextLine[0].equals("*")) {
                     for (int t = 1; t < TextLine.length; t++) {
                         B_martrix[t - 1] = TextLine[t];
@@ -93,8 +98,8 @@ public class ArtificialNeuralNetwork implements Serializable {
         return Result;
     }
 
-    public double[][] getForwardResult_singleOutput(String Input){
-        String[] inputArr=Input.split("\t");
+    public double[][] getForwardResult_singleOutput(String Input) {
+        String[] inputArr = Input.split("\t");
         double Tag = Double.parseDouble(inputArr[inputArr.length - 1]);
         double[][] InputVec = new double[inputArr.length - 1][1];
         for (int i = 0; i < inputArr.length - 1; i++) {
@@ -122,7 +127,7 @@ public class ArtificialNeuralNetwork implements Serializable {
 
             double[][] thisLayerInput = new double[1][ANN[LayerNum - 1].getInputNum()];
             for (int j = 0; j < ANN[LayerNum - 1].getInputNum(); j++) {
-                thisLayerInput[0][j] = ((double[][]) (TempReult.get(LayerNum - 1)))[j][0];//   TempReult[LayerNum - 1].get(j);
+                thisLayerInput[0][j] = ((double[][]) (TempReult.get(LayerNum - 1)))[j][0];
             }
 
             Zmat WeightChange = Times.o(new Z(-LearnRate, 0), Times.o(s, new Zmat(thisLayerInput)));
@@ -151,6 +156,85 @@ public class ArtificialNeuralNetwork implements Serializable {
             return null;
         }
 
+    }
+
+    public NeuronLayer[] getErrorGradient(double[][] ErrVec) {
+        try {
+            Zmat F;
+            Zmat s;
+            NeuronLayer[] WeightGradientArr = new NeuronLayer[this.LayerNum];
+
+            F = getMatF(TempReult, LayerNum, ANN[LayerNum - 1].getNeuronNum(), ANN[LayerNum - 1].getTF_index());
+            s = Times.o(new Z(-2, 0), Times.o(F, new Zmat(ErrVec)));
+
+            double[][] thisLayerInput = new double[1][ANN[LayerNum - 1].getInputNum()];
+            for (int j = 0; j < ANN[LayerNum - 1].getInputNum(); j++) {
+                thisLayerInput[0][j] = ((double[][]) (TempReult.get(LayerNum - 1)))[j][0];
+            }
+            Zmat WeightGradient = Times.o(s, new Zmat(thisLayerInput));
+            Zmat BiasGradient = s;
+            NeuronLayer OutputLayerGradient = new NeuronLayer(WeightGradient, BiasGradient, 1);
+            WeightGradientArr[LayerNum - 1] = OutputLayerGradient;
+
+            for (int i = LayerNum - 2; 0 <= i; i--) {
+                F = getMatF(TempReult, i + 1, ANN[i].getNeuronNum(), ANN[i].getTF_index());
+                s = Times.o(F, Times.o(transpose.o(new Zmat(ANN[i + 1].getWeightMat())), s));
+
+                thisLayerInput = new double[1][ANN[i].getInputNum()];
+                for (int j = 0; j < ANN[i].getInputNum(); j++) {
+                    thisLayerInput[0][j] = ((double[][]) (TempReult.get(i)))[j][0];
+                }
+
+                WeightGradient = Times.o(s, new Zmat(thisLayerInput));
+                BiasGradient = s;
+                NeuronLayer LayerGradient = new NeuronLayer(WeightGradient, BiasGradient, 1);
+                WeightGradientArr[i] = LayerGradient;
+            }
+            this.TempReult.clear();
+            return WeightGradientArr;
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            return null;
+        }
+    }
+
+    public Zmat getJacobianMatrix() {
+        try {
+            Zmat JacobianMatrix;
+            Zmat F;
+            Zmat MarquardtSensitivity;
+
+            F = getMatF(TempReult, LayerNum, ANN[LayerNum - 1].getNeuronNum(), ANN[LayerNum - 1].getTF_index());
+            MarquardtSensitivity = Times.o(new Z(-1, 0), F);
+
+            double[][] thisLayerInput = new double[1][ANN[LayerNum - 1].getInputNum()];
+            for (int j = 0; j < ANN[LayerNum - 1].getInputNum(); j++) {
+                thisLayerInput[0][j] = ((double[][]) (TempReult.get(LayerNum - 1)))[j][0];
+            }
+
+            Zmat WeightJacobian = Times.o(MarquardtSensitivity, new Zmat(thisLayerInput));
+            Zmat BiasJacobian = MarquardtSensitivity;
+            JacobianMatrix=Merge.o12(WeightJacobian,BiasJacobian);
+
+            for (int i = LayerNum - 2; 0 <= i; i--) {
+                F = getMatF(TempReult, i + 1, ANN[i].getNeuronNum(), ANN[i].getTF_index());
+                MarquardtSensitivity = Times.o(F, Times.o(transpose.o(new Zmat(ANN[i + 1].getWeightMat())), MarquardtSensitivity));
+
+                thisLayerInput = new double[1][ANN[i].getInputNum()];
+                for (int j = 0; j < ANN[i].getInputNum(); j++) {
+                    thisLayerInput[0][j] = ((double[][]) (TempReult.get(i)))[j][0];
+                }
+
+                WeightJacobian = Times.o(MarquardtSensitivity, new Zmat(thisLayerInput));
+                BiasJacobian = MarquardtSensitivity;
+                JacobianMatrix= Merge.o13(WeightJacobian,BiasJacobian,JacobianMatrix);
+            }
+            this.TempReult.clear();
+            return JacobianMatrix;
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            return null;
+        }
     }
 
     public boolean updateWeightNetwork(NeuronLayer[] ChangeAmount) {
@@ -198,6 +282,15 @@ public class ArtificialNeuralNetwork implements Serializable {
             }
         } catch (Exception e) {
             System.out.println(e.toString());
+        }
+    }
+
+    public void multiplyuNetwork(double alpha) {
+        for (int i = 0; i < this.LayerNum; i++) {
+            for (int j = 0; j < this.ANN[i].getNeuronNum(); j++) {
+                this.ANN[i].multiplyCertainNeuron(j, alpha);
+            }
+            this.ANN[i].multiplyBias(alpha);
         }
     }
 
@@ -253,6 +346,10 @@ public class ArtificialNeuralNetwork implements Serializable {
         return this.LayerNum;
     }
 
+    public int getOutputNum(){
+        return this.ANN[this.LayerNum-1].getNeuronNum();
+    }
+
     public String[] saveANN() {
         int totalLineNum = 4;
         for (int i = 0; i < this.LayerNum; i++) {
@@ -286,5 +383,99 @@ public class ArtificialNeuralNetwork implements Serializable {
             currentLineNum++;
         }
         return ANN_content_arr;
+    }
+
+    public static NeuronLayer[] getFR_CGD(NeuronLayer[] ThisIteGradientArr, NeuronLayer[] LastIteGradientArr, NeuronLayer[] LastIteCGDirection) {
+        try {
+            NeuronLayer[] CG_Direction = new NeuronLayer[ThisIteGradientArr.length];
+            for (int i = 0; i < ThisIteGradientArr.length; i++) {
+                for (int j = 0; j < ThisIteGradientArr[i].getNeuronNum(); j++) {
+                    double tmp1 = 0.0;
+                    double tmp2 = 0.0;
+                    for (int k = 0; k < ThisIteGradientArr[i].getInputNum(); k++) {
+                        tmp1 += (ThisIteGradientArr[i].getCertainWeight(j, k) * ThisIteGradientArr[i].getCertainWeight(j, k));
+                        tmp2 += (LastIteGradientArr[i].getCertainWeight(j, k) * LastIteGradientArr[i].getCertainWeight(j, k));
+                    }
+                    LastIteCGDirection[i].multiplyCertainNeuron(j, (tmp1 / tmp2));
+                }
+                double sum1 = 0;
+                double sum2 = 0;
+                for (int k = 0; k < ThisIteGradientArr[i].getNeuronNum(); k++) {
+                    sum1 += (ThisIteGradientArr[i].getCertainBias(k) * ThisIteGradientArr[i].getCertainBias(k));
+                    sum2 += (LastIteGradientArr[i].getCertainBias(k) * LastIteGradientArr[i].getCertainBias(k));
+                }
+                LastIteCGDirection[i].multiplyBias(sum1 / sum2);
+
+                CG_Direction[i] = NeuronLayer.getSubtractionBetweenTwo(LastIteCGDirection[i], ThisIteGradientArr[i]);
+            }
+            return CG_Direction;
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            return null;
+        }
+    }
+
+    public static NeuronLayer[] getPR_CGD(NeuronLayer[] ThisIteGradientArr, NeuronLayer[] LastIteGradientArr, NeuronLayer[] LastIteCGDirection) {
+        try {
+            NeuronLayer[] CG_Direction = new NeuronLayer[ThisIteGradientArr.length];
+            for (int i = 0; i < ThisIteGradientArr.length; i++) {
+                for (int j = 0; j < ThisIteGradientArr[i].getNeuronNum(); j++) {
+                    double tmp1 = 0.0;
+                    double tmp2 = 0.0;
+                    for (int k = 0; k < ThisIteGradientArr[i].getInputNum(); k++) {
+                        tmp1 += ((ThisIteGradientArr[i].getCertainWeight(j, k) - LastIteGradientArr[i].getCertainWeight(j, k)) * ThisIteGradientArr[i].getCertainWeight(j, k));
+                        tmp2 += (LastIteGradientArr[i].getCertainWeight(j, k) * LastIteGradientArr[i].getCertainWeight(j, k));
+                    }
+                    LastIteCGDirection[i].multiplyCertainNeuron(j, (tmp1 / tmp2));
+                }
+                double sum1 = 0;
+                double sum2 = 0;
+                for (int k = 0; k < ThisIteGradientArr[i].getNeuronNum(); k++) {
+                    sum1 += ((ThisIteGradientArr[i].getCertainBias(k) - LastIteGradientArr[i].getCertainBias(k)) * ThisIteGradientArr[i].getCertainBias(k));
+                    sum2 += (LastIteGradientArr[i].getCertainBias(k) * LastIteGradientArr[i].getCertainBias(k));
+                }
+                LastIteCGDirection[i].multiplyBias(sum1 / sum2);
+
+                CG_Direction[i] = NeuronLayer.getSubtractionBetweenTwo(LastIteCGDirection[i], ThisIteGradientArr[i]);
+            }
+            return CG_Direction;
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            return null;
+        }
+    }
+
+    public static ArtificialNeuralNetwork addTwoANN(NeuronLayer[] ANN1, NeuronLayer[] ANN2) {
+        NeuronLayer[] NewNeuronLayerArr = new NeuronLayer[ANN1.length];
+
+        for (int i = 0; i < NewNeuronLayerArr.length; i++) {
+            NewNeuronLayerArr[i] = NeuronLayer.getAdditionBetweenTwo(ANN1[i], ANN2[i]);
+        }
+
+        ArtificialNeuralNetwork ResultANN = new ArtificialNeuralNetwork(NewNeuronLayerArr);
+        return ResultANN;
+    }
+
+    public static NeuronLayer[] multiplyNeuronLayers(NeuronLayer[] NL, double alpha) {
+        NeuronLayer[] MNL = new NeuronLayer[NL.length];
+
+        for (int i = 0; i < NL.length; i++) {
+            MNL[i] = NeuronLayer.getMultiplyBasedOne(NL[i], alpha);
+        }
+
+        return MNL;
+    }
+
+    public static double getNeuronLayerArrLength_norm2(NeuronLayer[] ANN){
+        double Length=0;
+        for(int i=0;i<ANN.length;i++){
+            for(int j=0;j<ANN[i].getNeuronNum();j++){
+                for(int k=0;k<ANN[i].getInputNum();k++){
+                    Length+= ANN[i].getCertainWeight(j,k) *ANN[i].getCertainWeight(j,k);
+                }
+                Length+=ANN[i].getCertainBias(j) * ANN[i].getCertainBias(j);
+            }
+        }
+        return Math.sqrt(Length);
     }
 }

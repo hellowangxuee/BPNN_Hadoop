@@ -4,6 +4,7 @@ import Jampack.JampackException;
 import Jampack.Plus;
 import Jampack.Zmat;
 import Jampack.mult;
+import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec;
 
 /**
  * Created by Jackie on 16/3/3.
@@ -29,6 +30,7 @@ public class NeuronLayer {
         }
     }
 
+
     public NeuronLayer(SingleNeuron[] NeuronArr) {
         this.InputNum = NeuronArr[0].getInputNum();
         this.TF_index = NeuronArr[0].getTF_index();
@@ -51,7 +53,7 @@ public class NeuronLayer {
         int NeronNum=ALayer.getWeightMat().length;
 
         this.WeightMat = new double[NeronNum][InputNum];
-        this.BiasVec = new double[InputNum][1];
+        this.BiasVec = new double[NeronNum][1];
 
         for (int i = 0; i < NeronNum; i++) {
             for (int j = 0; j < InputNum; j++) {
@@ -146,6 +148,14 @@ public class NeuronLayer {
         BiasVec[i][0] += value;
     }
 
+    public void setCertainWeight(int i,int j,double value) {
+        WeightMat[i][j] = value;
+    }
+
+    public void setCertainBias(int i,double value) {
+        BiasVec[i][0] = value;
+    }
+
     public void clearLayer(){
         for (int i = 0; i < WeightMat.length; i++) {
             for (int j = 0; j < WeightMat[i].length; j++) {
@@ -156,13 +166,14 @@ public class NeuronLayer {
     }
 
     public void averageLayer(int Q){
-        for (int i = 0; i < WeightMat.length; i++) {
-            for (int j = 0; j < WeightMat[i].length; j++) {
-                WeightMat[i][j] /=Q;
+        if(Q!=0) {
+            for (int i = 0; i < WeightMat.length; i++) {
+                for (int j = 0; j < WeightMat[i].length; j++) {
+                    WeightMat[i][j] /= Q;
+                }
+                BiasVec[i][0] /= Q;
             }
-            BiasVec[i][0] /=Q;
         }
-
     }
 
     public int getInputNum() {
@@ -193,4 +204,78 @@ public class NeuronLayer {
         return this.WeightMat.length;
     }
 
+    public double getMaxElement() {
+        double maxEle = 0.0;
+        for (int i = 0; i < this.WeightMat.length; i++) {
+            for (int j = 0; j < this.InputNum; j++) {
+                if (Math.abs(this.WeightMat[i][j]) > maxEle) {
+                    maxEle = Math.abs(this.WeightMat[i][j]);
+                }
+            }
+            if (Math.abs(this.BiasVec[i][0]) > maxEle) {
+                maxEle = Math.abs(this.BiasVec[i][0]);
+            }
+        }
+        return maxEle;
+    }
+
+    public void multiplyCertainNeuron(int NeuronNum,double beta) {
+        if (beta != 0) {
+            for (int j = 0; j < this.InputNum; j++) {
+                this.WeightMat[NeuronNum][j] *= beta;
+            }
+        }
+    }
+
+    public void multiplyBias(double beta) {
+        if (beta != 0) {
+            for (int j = 0; j < this.WeightMat.length; j++) {
+                this.BiasVec[j][0] *= beta;
+            }
+        }
+    }
+
+    public void multiplyNeuronLayer(double alpha){
+        if(alpha!=0){
+            for(int i=0;i<this.WeightMat.length;i++){
+                for(int j=0;j<this.InputNum;j++){
+                    this.WeightMat[i][j] *= alpha;
+                }
+                this.BiasVec[i][0] *=alpha;
+            }
+        }
+    }
+
+    public static NeuronLayer getSubtractionBetweenTwo(NeuronLayer N1,NeuronLayer N2) {
+        NeuronLayer SubResult = new NeuronLayer(N1.getInputNum(), N1.getNeuronNum(), N1.getTF_index());
+        for (int i = 0; i < N1.getNeuronNum(); i++) {
+            for (int j = 0; j < N1.getInputNum(); j++) {
+                SubResult.setCertainWeight(i, j, N1.getCertainWeight(i, j) - N2.getCertainWeight(i, j));
+            }
+            SubResult.setCertainBias(i, N1.getCertainBias(i) - N2.getCertainBias(i));
+        }
+        return SubResult;
+    }
+
+    public static NeuronLayer getAdditionBetweenTwo(NeuronLayer N1,NeuronLayer N2) {
+        NeuronLayer AddResult = new NeuronLayer(N1.getInputNum(), N1.getNeuronNum(), N1.getTF_index());
+        for (int i = 0; i < N1.getNeuronNum(); i++) {
+            for (int j = 0; j < N1.getInputNum(); j++) {
+                AddResult.setCertainWeight(i, j, N1.getCertainWeight(i, j) + N2.getCertainWeight(i, j));
+            }
+            AddResult.setCertainBias(i, N1.getCertainBias(i) + N2.getCertainBias(i));
+        }
+        return AddResult;
+    }
+
+    public static NeuronLayer getMultiplyBasedOne(NeuronLayer N1,double alpha) {
+        NeuronLayer MulResult = new NeuronLayer(N1.getInputNum(), N1.getNeuronNum(), N1.getTF_index());
+        for (int i = 0; i < N1.getNeuronNum(); i++) {
+            for (int j = 0; j < N1.getInputNum(); j++) {
+                MulResult.setCertainWeight(i, j, N1.getCertainWeight(i, j) * alpha);
+            }
+            MulResult.setCertainBias(i, N1.getCertainBias(i) * alpha);
+        }
+        return MulResult;
+    }
 }

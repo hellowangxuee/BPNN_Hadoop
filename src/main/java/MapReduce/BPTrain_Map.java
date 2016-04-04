@@ -40,10 +40,12 @@ public class BPTrain_Map extends
     private Text Windex = new Text();
     private Text Bindex = new Text();
     private String ANN_path = "";
+    private double learning_rate=0.2;
 
     protected void getANNPath(Context context) throws IOException, InterruptedException {
         Configuration conf = context.getConfiguration();
         this.ANN_path = conf.get("ThisIterationPath");
+        this.learning_rate=conf.getDouble("LearningRate",0.2);
     }
 
     public void map(LongWritable key, Text value, Context context)
@@ -57,6 +59,9 @@ public class BPTrain_Map extends
         // 将输入的数据首先按行进行分割
         StringTokenizer tokenizerArticle = new StringTokenizer(line, "\n");
 
+        //establish a ANN from existing file
+        ArtificialNeuralNetwork TrainingANN = new ArtificialNeuralNetwork(ANN_path);
+
         //Data+Tag,transfer them into double
         while (tokenizerArticle.hasMoreElements()) {
             String[] DataArr = tokenizerArticle.nextToken().split("\t");
@@ -66,19 +71,12 @@ public class BPTrain_Map extends
                 InputVec[i][0] = Double.parseDouble(DataArr[i]);
             }
 
-
-            //learning rate
-            double alpha = 0.1;
-
-            //establish a ANN from existing file
-            ArtificialNeuralNetwork TrainingANN = new ArtificialNeuralNetwork(ANN_path);
-
             double[][] ForwardResult = TrainingANN.getForwardResult(InputVec);
             double[][] ErrVec = new double[ForwardResult.length][1];
 
             ErrVec[0][0] = Tag - ForwardResult[0][0];
 
-            NeuronLayer[] WeightChangeArr = TrainingANN.getBackwardChange(ErrVec, alpha);
+            NeuronLayer[] WeightChangeArr = TrainingANN.getBackwardChange(ErrVec, learning_rate);
 
             for (int i = 0; i < WeightChangeArr.length; i++) {
                 for (int j = 0; j < WeightChangeArr[i].getNeuronNum(); j++) {
