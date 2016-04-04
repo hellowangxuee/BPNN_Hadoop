@@ -29,22 +29,20 @@ public class NeuronLayer {
             this.BiasVec[i][0] = Math.random()-0.5;
         }
     }
-
-
-    public NeuronLayer(SingleNeuron[] NeuronArr) {
-        this.InputNum = NeuronArr[0].getInputNum();
-        this.TF_index = NeuronArr[0].getTF_index();
-
-        this.WeightMat = new double[NeuronArr.length][InputNum];
-        this.BiasVec = new double[InputNum][1];
-
-        for (int i = 0; i < NeuronArr.length; i++) {
-            for (int j = 0; j < NeuronArr[i].getInputNum(); j++) {
-                this.WeightMat[i][j] = NeuronArr[i].getCertainWeight(j);
-            }
-            this.BiasVec[i][0] = NeuronArr[i].getBias();
-        }
-    }
+//    public NeuronLayer(SingleNeuron[] NeuronArr) {
+//        this.InputNum = NeuronArr[0].getInputNum();
+//        this.TF_index = NeuronArr[0].getTF_index();
+//
+//        this.WeightMat = new double[NeuronArr.length][InputNum];
+//        this.BiasVec = new double[InputNum][1];
+//
+//        for (int i = 0; i < NeuronArr.length; i++) {
+//            for (int j = 0; j < NeuronArr[i].getInputNum(); j++) {
+//                this.WeightMat[i][j] = NeuronArr[i].getCertainWeight(j);
+//            }
+//            this.BiasVec[i][0] = NeuronArr[i].getBias();
+//        }
+//    }
 
     public NeuronLayer(NeuronLayer ALayer) {
         this.InputNum = ALayer.getInputNum();

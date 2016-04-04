@@ -40,6 +40,25 @@ import java.util.*;
  */
 public class BPTrain {
 
+    private static Job getLMBP_SettedJob(Configuration conf, int IterationNum, String Time) throws Exception {
+        Job job = new Job(conf);
+        job.setJarByClass(BPTrain.class);
+        job.setJobName("LMBPTrain" + String.valueOf(IterationNum) + "~" + Time);
+
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(DoubleWritable.class);
+
+        job.setMapperClass(LMBPTrain_Map.class);
+        job.setReducerClass(LMBPTrain_Reduce.class);
+
+        job.setInputFormatClass(TextInputFormat.class);
+        job.setOutputFormatClass(TextOutputFormat.class);
+
+        job.setNumReduceTasks(1);
+
+        return job;
+    }
+
     private static Job getCGBP_SettedJob(Configuration conf, int IterationNum, String Time) throws Exception {
         Job job = new Job(conf);
         job.setJarByClass(BPTrain.class);
@@ -464,6 +483,40 @@ public class BPTrain {
 
     }
 
+    private static void run_LMBP(ArtificialNeuralNetwork InitialANN,String ipPrefix,  String InputPath, String OutputPath,int MaxIterationNum) throws Exception {
+        String[] pathArr = OutputPath.split("/");
+        String pathPrefix = "";
+        for (int i = 1; i < pathArr.length - 1; i++) {
+            pathPrefix += "/" + pathArr[i];
+        }
+        for (int IterationNum = 0; IterationNum < MaxIterationNum; IterationNum++) {
+            Configuration conf = new Configuration();
+
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");//设置日期格式
+            String TimeNow = df.format(new Date());
+
+            if (IterationNum == 0) {
+                ReadNWrite.hdfs_Write(InitialANN.saveANN(), ipPrefix + pathPrefix + "/result_ANN-0");
+                conf.set("ThisIterationPath", ipPrefix + pathPrefix + "/result_ANN-0");
+            } else {
+                String oldANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum - 1);
+                String newANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum);
+                String ChangeValuePath = ipPrefix + OutputPath + "-" + String.valueOf(IterationNum - 1);
+
+                BPTrain.getNewANN_Usual(oldANNPath, ChangeValuePath, newANNPath);
+                conf.set("ThisIterationPath", newANNPath);
+            }
+            //Set job configs
+            Job job = BPTrain.getLMBP_SettedJob(conf, IterationNum, TimeNow);
+            FileInputFormat.addInputPath(job, new Path(InputPath));
+            String outPath = OutputPath + "-" + String.valueOf(IterationNum);
+            FileOutputFormat.setOutputPath(job, new Path(outPath));
+            //hand in the job
+            job.waitForCompletion(true);
+        }
+
+    }
+
     public static void main(String[] args) throws Exception {
         int TotalIterationNum = 50;
         String ipPrefix = "hdfs://Master:9000";
@@ -475,7 +528,7 @@ public class BPTrain {
 
         ArtificialNeuralNetwork InitialANN = new ArtificialNeuralNetwork(InputNum, LayerNum, NumEachLayer, IndexEachLayer);
 
-        BPTrain.run_SDBP_Usual(InitialANN, ipPrefix, args[0], args[1], TotalIterationNum);
+        BPTrain.run_LMBP(InitialANN, ipPrefix, args[0], args[1], TotalIterationNum);
 
 //        for (; IterationNum < TotalIterationNum; IterationNum++) {
 //            Configuration conf = new Configuration();

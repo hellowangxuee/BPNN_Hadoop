@@ -32,8 +32,10 @@
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/House.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Schur.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/mult.java
+/home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/test3.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/test.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Rand.java
+/home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/MapReduce/LMBPTrain_Map.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Solve.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Eig.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Merge.java
@@ -46,6 +48,7 @@
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Pivot.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Plus.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Parameters.java
+/home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/MapReduce/LMBPTrain_Reduce.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/NeuralNetwork/ArtificialNeuralNetwork.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/MapReduce/BPTrain.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/JampackException.java

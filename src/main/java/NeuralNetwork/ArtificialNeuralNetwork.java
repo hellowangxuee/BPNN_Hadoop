@@ -227,7 +227,7 @@ public class ArtificialNeuralNetwork implements Serializable {
 
                 WeightJacobian = Times.o(MarquardtSensitivity, new Zmat(thisLayerInput));
                 BiasJacobian = MarquardtSensitivity;
-                JacobianMatrix= Merge.o13(WeightJacobian,BiasJacobian,JacobianMatrix);
+                JacobianMatrix = Merge.o13(transpose.o(WeightJacobian), transpose.o(BiasJacobian), JacobianMatrix);
             }
             this.TempReult.clear();
             return JacobianMatrix;
@@ -267,6 +267,14 @@ public class ArtificialNeuralNetwork implements Serializable {
 
     public void updateCertainBias(int LayNum, int NeuronNum, double value) {
         ANN[LayNum].updateCertainBias(NeuronNum, value);
+    }
+
+    public void setCertainWeight(int LayNum, int NeuronNum, int WeightNum, double value) {
+        ANN[LayNum].setCertainWeight(NeuronNum, WeightNum, value);
+    }
+
+    public void setCertainBias(int LayNum, int NeuronNum, double value) {
+        ANN[LayNum].setCertainBias(NeuronNum, value);
     }
 
     public void clearNetwork() {
@@ -348,6 +356,10 @@ public class ArtificialNeuralNetwork implements Serializable {
 
     public int getOutputNum(){
         return this.ANN[this.LayerNum-1].getNeuronNum();
+    }
+
+    public int getInputNum(){
+        return this.ANN[0].getInputNum();
     }
 
     public String[] saveANN() {
