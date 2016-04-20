@@ -1,6 +1,6 @@
 package Jampack;
 
-class Trace{
+public class Trace{
 
    public static Z o(Zmat A){
 

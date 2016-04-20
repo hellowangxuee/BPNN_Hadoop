@@ -76,7 +76,7 @@ public class BPTrain_Map extends
 
             ErrVec[0][0] = Tag - ForwardResult[0][0];
 
-            NeuronLayer[] WeightChangeArr = TrainingANN.getBackwardChange(ErrVec, learning_rate);
+            NeuronLayer[] WeightChangeArr = TrainingANN.getSDBackwardUpdates(ErrVec, learning_rate);
 
             for (int i = 0; i < WeightChangeArr.length; i++) {
                 for (int j = 0; j < WeightChangeArr[i].getNeuronNum(); j++) {

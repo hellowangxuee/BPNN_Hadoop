@@ -14,6 +14,7 @@ import com.sun.org.apache.xerces.internal.util.URI;
 import org.apache.hadoop.metrics.spi.NullContext;
 import org.apache.hadoop.yarn.util.StringHelper;
 import org.apache.hadoop.yarn.util.SystemClock;
+import sun.plugin.javascript.navig4.Layer;
 
 /**
  * Created by Jackie on 16/3/3.
@@ -116,7 +117,7 @@ public class ArtificialNeuralNetwork implements Serializable {
         return Result;
     }
 
-    public NeuronLayer[] getBackwardChange(double[][] ErrVec, double LearnRate) {
+    public NeuronLayer[] getSDBackwardUpdates(double[][] ErrVec, double LearnRate) {
         try {
             Zmat F;
             Zmat s;
@@ -200,7 +201,7 @@ public class ArtificialNeuralNetwork implements Serializable {
 
     public Zmat getJacobianMatrix() {
         try {
-            Zmat JacobianMatrix;
+            Zmat JacobianMatrix=null;
             Zmat F;
             Zmat MarquardtSensitivity;
 
@@ -214,7 +215,20 @@ public class ArtificialNeuralNetwork implements Serializable {
 
             Zmat WeightJacobian = Times.o(MarquardtSensitivity, new Zmat(thisLayerInput));
             Zmat BiasJacobian = MarquardtSensitivity;
-            JacobianMatrix=Merge.o12(WeightJacobian,BiasJacobian);
+
+            for(int k=0;k<WeightJacobian.nr;k++){
+                if(k==0){
+                    int[] index=new int[1];
+                    index[0]=k+1;
+                    JacobianMatrix=WeightJacobian.get(index,1,WeightJacobian.nc);
+                }
+                else {
+                    int[] index=new int[1];
+                    index[0]=k+1;
+                    JacobianMatrix = Merge.o12(JacobianMatrix,WeightJacobian.get(index,1,WeightJacobian.nc));
+                }
+            }
+            JacobianMatrix=Merge.o12(JacobianMatrix,BiasJacobian);
 
             for (int i = LayerNum - 2; 0 <= i; i--) {
                 F = getMatF(TempReult, i + 1, ANN[i].getNeuronNum(), ANN[i].getTF_index());
@@ -227,7 +241,22 @@ public class ArtificialNeuralNetwork implements Serializable {
 
                 WeightJacobian = Times.o(MarquardtSensitivity, new Zmat(thisLayerInput));
                 BiasJacobian = MarquardtSensitivity;
-                JacobianMatrix = Merge.o13(transpose.o(WeightJacobian), transpose.o(BiasJacobian), JacobianMatrix);
+
+                Zmat ThisLayerJacobianMatrix = null;
+                for (int k = 0; k < WeightJacobian.nr; k++) {
+                    if (k == 0) {
+                        int[] index = new int[1];
+                        index[0] = k + 1;
+                        ThisLayerJacobianMatrix = WeightJacobian.get(index, 1, WeightJacobian.nc);
+                    } else {
+                        int[] index = new int[1];
+                        index[0] = k + 1;
+                        ThisLayerJacobianMatrix = Merge.o12(ThisLayerJacobianMatrix, WeightJacobian.get(index, 1, WeightJacobian.nc));
+                    }
+                }
+                ThisLayerJacobianMatrix = Merge.o12(ThisLayerJacobianMatrix, transpose.o(BiasJacobian));
+
+                JacobianMatrix = Merge.o12(ThisLayerJacobianMatrix, JacobianMatrix);
             }
             this.TempReult.clear();
             return JacobianMatrix;
@@ -362,6 +391,19 @@ public class ArtificialNeuralNetwork implements Serializable {
         return this.ANN[0].getInputNum();
     }
 
+    public double getWeightSquareSum() {
+        double WeightSquareSum = 0.0;
+        for (int i = 0; i < ANN.length; i++) {
+            for (int j = 0; j < ANN[i].getNeuronNum(); j++) {
+                for (int k = 0; k < ANN[i].getInputNum(); k++) {
+                    WeightSquareSum += ANN[i].getCertainWeight(j, k) * ANN[i].getCertainWeight(j, k);
+                }
+                WeightSquareSum += ANN[i].getCertainBias(j) * ANN[i].getCertainBias(j);
+            }
+        }
+        return WeightSquareSum;
+    }
+
     public String[] saveANN() {
         int totalLineNum = 4;
         for (int i = 0; i < this.LayerNum; i++) {
@@ -489,5 +531,22 @@ public class ArtificialNeuralNetwork implements Serializable {
             }
         }
         return Math.sqrt(Length);
+    }
+
+    public static double getNeuronLayerArrLength_norm_min(NeuronLayer[] ANN){
+        double Min=Double.MAX_VALUE;
+        for(int i=0;i<ANN.length;i++) {
+            for (int j = 0; j < ANN[i].getNeuronNum(); j++) {
+                for (int k = 0; k < ANN[i].getInputNum(); k++) {
+                    if (Math.abs(ANN[i].getCertainWeight(j, k)) < Min) {
+                        Min = Math.abs(ANN[i].getCertainWeight(j, k));
+                    }
+                }
+                if (Math.abs(ANN[i].getCertainBias(j)) < Min) {
+                    Min = Math.abs(ANN[i].getCertainBias(j));
+                }
+            }
+        }
+        return Min;
     }
 }

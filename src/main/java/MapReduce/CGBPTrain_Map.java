@@ -29,8 +29,8 @@ public class CGBPTrain_Map extends
     private Text Windex = new Text();
     private Text Bindex = new Text();
     private String ANN_path = "";
-    private double ErrorUpperBound = 0.001;
-    private double LeastGradientLength = 0.001;
+    private double ErrorUpperBound = 0.05;
+    private double LeastGradientLength = 1E-6;
 
 
     protected void getANNPath(Context context) throws IOException, InterruptedException {
@@ -56,19 +56,19 @@ public class CGBPTrain_Map extends
         BatchStore.clearNetwork();
         GradientStore.clearNetwork();
 
+        double HeuristicStep = 0.1;
+        double SquErrSum = 0;
+        int EntryNum = 0;
         int ParaNum = 0;
         for (int i = 0; i < TrainingANN.getLayerNum(); i++) {
             ParaNum += TrainingANN.getANN()[i].getNeuronNum() * (TrainingANN.getANN()[i].getInputNum() + 1);
         }
 
-        double HeuristicStep = 0.1;
-
         NeuronLayer[] LastGenerationGradient = null;
         NeuronLayer[] LastGenerationDirection = null;
 
         Vector<Double[]> InputDataVector = new Vector<Double[]>();
-        double SquErrSum = 0;
-        int EntryNum = 0;
+
         //Data+Tag,transfer them into double
         for (; tokenizerArticle.hasMoreElements(); EntryNum++) {
             String[] DataArr = tokenizerArticle.nextToken().split("\t");
@@ -93,31 +93,14 @@ public class CGBPTrain_Map extends
             context.write(new Text("SquareError"), new DoubleWritable(ErrVec[0][0] * ErrVec[0][0]));
         }
         double MSE = SquErrSum / EntryNum;
-//            for (int i = 0; i < ThisGenerationGradient.length; i++) {
-//                for (int j = 0; j < ThisGenerationGradient[i].getNeuronNum(); j++) {
-//                    for (int k = 0; k < ThisGenerationGradient[i].getInputNum(); k++) {
-//                        String WeightIndex = "W-" + String.valueOf(i) + "-";
-//                        WeightIndex += String.valueOf(j) + "-" + String.valueOf(k);
-//                        Windex.set(WeightIndex);
-//                        context.write(Windex, new DoubleWritable(ThisGenerationGradient[i].getCertainWeight(j, k)));
-//                    }
-//                }
-//            }
-//            for (int i = 0; i < ThisGenerationGradient.length; i++) {
-//                for (int j = 0; j < ThisGenerationGradient[i].getNeuronNum(); j++) {
-//                    String BiasIndex = "B-" + String.valueOf(i) + "-";
-//                    BiasIndex += String.valueOf(j);
-//                    Bindex.set(BiasIndex);
-//                    context.write(Bindex, new DoubleWritable(ThisGenerationGradient[i].getCertainBias(j)));
-//                }
-//            }
-//            context.write(new Text("SquareError"), new DoubleWritable(ErrVec[0][0] * ErrVec[0][0]));
+
         NeuronLayer[] UpdatesDirection = null;
         NeuronLayer[] SearchDirection = null;
         for (int LineNum = 0; MSE >= ErrorUpperBound; LineNum++) {
             GradientStore.averageNetwork(EntryNum);
             NeuronLayer[] ThisGenerationGradient = GradientStore.getANN();
-            if (ArtificialNeuralNetwork.getNeuronLayerArrLength_norm2(ThisGenerationGradient) < LeastGradientLength) {
+            double GradientLength = ArtificialNeuralNetwork.getNeuronLayerArrLength_norm2(ThisGenerationGradient);
+            if (GradientLength < LeastGradientLength) {
                 break;
             }
             if (LineNum % ParaNum == 0) {
@@ -131,8 +114,7 @@ public class CGBPTrain_Map extends
 
             TrainingANN.updateWeightNetwork(UpdatesDirection);
             BatchStore.updateWeightNetwork(UpdatesDirection);
-//            ForwardResult = TrainingANN.getForwardResult(InputVec);
-//            ErrVec[0][0] = Tag - ForwardResult[0][0];
+
             SquErrSum = 0;
             GradientStore.clearNetwork();
             for (int i = 0; i < InputDataVector.size(); i++) {
@@ -153,7 +135,7 @@ public class CGBPTrain_Map extends
             LastGenerationGradient = ThisGenerationGradient;
             LastGenerationDirection = SearchDirection;
         }
-
+        //if (true/*ArtificialNeuralNetwork.getNeuronLayerArrLength_norm2(BatchStore.getANN()) < Double.POSITIVE_INFINITY*/) {
         for (int i = 0; i < BatchStore.getANN().length; i++) {
             for (int j = 0; j < BatchStore.getANN()[i].getNeuronNum(); j++) {
                 for (int k = 0; k < BatchStore.getANN()[i].getInputNum(); k++) {
@@ -161,6 +143,7 @@ public class CGBPTrain_Map extends
                     WeightIndex += String.valueOf(j) + "-" + String.valueOf(k);
                     Windex.set(WeightIndex);
                     context.write(Windex, new DoubleWritable(BatchStore.getANN()[i].getCertainWeight(j, k)));
+                    //System.out.println(WeightIndex + "\t" + String.valueOf(BatchStore.getANN()[i].getCertainWeight(j, k)));
                 }
             }
         }
@@ -170,9 +153,12 @@ public class CGBPTrain_Map extends
                 BiasIndex += String.valueOf(j);
                 Bindex.set(BiasIndex);
                 context.write(Bindex, new DoubleWritable(BatchStore.getANN()[i].getCertainBias(j)));
+                //System.out.println(BiasIndex + "\t" + String.valueOf(BatchStore.getANN()[i].getCertainBias(j)));
             }
         }
-        //BatchStore.clearNetwork();
+//        }
+//        BatchStore.clearNetwork();
+//        GradientStore.clearNetwork();
     }
 }
 

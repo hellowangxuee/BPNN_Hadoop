@@ -6,6 +6,8 @@ import Jampack.Zmat;
 import Jampack.mult;
 import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec;
 
+import java.util.Random;
+
 /**
  * Created by Jackie on 16/3/3.
  */
@@ -15,6 +17,7 @@ public class NeuronLayer {
     private double[][] BiasVec = null;
     private int TF_index = 1;
 
+
     public NeuronLayer(int InputNum,int OutputNum,int TF_index) {
         this.InputNum = InputNum;
         this.TF_index = TF_index;
@@ -22,11 +25,13 @@ public class NeuronLayer {
         this.WeightMat = new double[OutputNum][InputNum];
         this.BiasVec = new double[OutputNum][1];
 
+        Random WeitghtRandom=new Random();
+
         for (int i = 0; i < OutputNum; i++) {
             for (int j = 0; j < InputNum; j++) {
-                this.WeightMat[i][j] = Math.random()-0.5;
+                this.WeightMat[i][j] = Math.sqrt(0.001)* WeitghtRandom.nextGaussian();  //(Math.random()-0.5);
             }
-            this.BiasVec[i][0] = Math.random()-0.5;
+            this.BiasVec[i][0] =Math.sqrt(0.001)* WeitghtRandom.nextGaussian();  //(Math.random()-0.5);
         }
     }
 //    public NeuronLayer(SingleNeuron[] NeuronArr) {

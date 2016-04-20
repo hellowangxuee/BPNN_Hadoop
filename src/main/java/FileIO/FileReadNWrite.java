@@ -7,8 +7,8 @@ import java.util.Vector;
  * Created by mlx on 3/11/16.
  */
 public class FileReadNWrite {
-    public static Vector readTxtFile(String filePath) {
-        Vector vet = new Vector();
+    public static Vector<Double[]> readTxtFile(String filePath) {
+        Vector<Double[]> vet = new Vector();
         try {
             String encoding = "GBK";
             File file = new File(filePath);
@@ -19,7 +19,7 @@ public class FileReadNWrite {
                 String lineTxt = null;
                 while ((lineTxt = bufferedReader.readLine()) != null) {
                     String[] lineArr = lineTxt.split("\t");
-                    double[] InputPair = new double[lineArr.length];
+                    Double[] InputPair = new Double[lineArr.length];
                     for (int k = 0; k < lineArr.length; k++) {
                         InputPair[k] = Double.parseDouble(lineArr[k]);
                     }
