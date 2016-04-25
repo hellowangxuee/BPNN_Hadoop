@@ -23,6 +23,7 @@ public class ArtificialNeuralNetwork implements Serializable {
     private int LayerNum = 2;
     private NeuronLayer[] ANN = null;
     private Vector TempReult = null;
+    public double MSEofCertainSet=0.0;
 
     public ArtificialNeuralNetwork(NeuronLayer[] NN_arr) {
         this.LayerNum = NN_arr.length;

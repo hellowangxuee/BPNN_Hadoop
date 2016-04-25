@@ -63,6 +63,28 @@ public class BPTrain {
         return job;
     }
 
+    private static Job getBayRegBP_SettedJob(Configuration conf, int IterationNum, String Time, String Input, String Output) throws Exception {
+        Job job = new Job(conf);
+        job.setJarByClass(BPTrain.class);
+        job.setJobName("BayRegBPTrain" + String.valueOf(IterationNum) + "~" + Time);
+
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(DoubleWritable.class);
+
+        job.setMapperClass(BayRegBPTrain_Map.class);
+        job.setReducerClass(BayRegBPTrain_Reduce.class);
+
+        job.setInputFormatClass(TextInputFormat.class);
+        job.setOutputFormatClass(TextOutputFormat.class);
+
+        FileInputFormat.addInputPath(job, new Path(Input));
+        FileOutputFormat.setOutputPath(job, new Path(Output));
+
+        job.setNumReduceTasks(5);
+
+        return job;
+    }
+
     private static Job getLMBP_SettedJob(Configuration conf, int IterationNum, String Time, String Input, String Output) throws Exception {
         Job job = new Job(conf);
         job.setJarByClass(BPTrain.class);
@@ -546,6 +568,37 @@ public class BPTrain {
             //hand in the job
             job.waitForCompletion(true);
         }
+    }
+
+    private static void run_BayRegBPTrain(ArtificialNeuralNetwork InitialANN, String ipPrefix, String InputPath, String OutputPath, int MaxIterationNum) throws Exception{
+        String[] pathArr = OutputPath.split("/");
+        String pathPrefix = "";
+        for (int i = 1; i < pathArr.length - 1; i++) {
+            pathPrefix += "/" + pathArr[i];
+        }
+        for (int IterationNum = 0; IterationNum < MaxIterationNum; IterationNum++) {
+            Configuration conf = new Configuration();
+
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");//设置日期格式
+            String TimeNow = df.format(new Date());
+
+            if (IterationNum == 0) {
+                ReadNWrite.hdfs_Write(InitialANN.saveANN(), ipPrefix + pathPrefix + "/result_ANN-0");
+                conf.set("ThisIterationPath", ipPrefix + pathPrefix + "/result_ANN-0");
+            } else {
+                String oldANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum - 1);
+                String newANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum);
+                String ChangeValuePath = ipPrefix + OutputPath + "-" + String.valueOf(IterationNum - 1);
+
+                BPTrain.getNewANN_Usual(oldANNPath, ChangeValuePath, newANNPath);
+                conf.set("ThisIterationPath", newANNPath);
+            }
+            //Set job configs
+            String outPath = OutputPath + "-" + String.valueOf(IterationNum);
+            Job job = BPTrain.getBayRegBP_SettedJob(conf, IterationNum, TimeNow, InputPath, outPath);
+            //hand in the job
+            job.waitForCompletion(true);
+        }
 
     }
 
@@ -555,10 +608,14 @@ public class BPTrain {
         int RunFucCode = Integer.parseInt(args[2]);
         int TotalIterationNum = Integer.parseInt(args[3]);
 
-        int InputNum = 41;
+//        int InputNum = 41;
+//        int LayerNum = 3;
+//        int[] NumEachLayer = {7, 10, 1};
+//        int[] IndexEachLayer = {1, 4, 4};
+        int InputNum = 1;
         int LayerNum = 3;
-        int[] NumEachLayer = {7, 10, 1};
-        int[] IndexEachLayer = {1, 4, 4};
+        int[] NumEachLayer = {10, 10, 1};
+        int[] IndexEachLayer = {1, 1, 3};
 
         ArtificialNeuralNetwork InitialANN = new ArtificialNeuralNetwork(InputNum, LayerNum, NumEachLayer, IndexEachLayer);
 
@@ -570,8 +627,10 @@ public class BPTrain {
             BPTrain.run_SDBP_MomentumVL(InitialANN, ipPrefix, args[0], args[1], TotalIterationNum, 0.8, 1.05, 0.7, 0.04);
         } else if (RunFucCode == 3) {
             BPTrain.run_CGBP(InitialANN, ipPrefix, args[0], args[1], TotalIterationNum);
-        } else {
+        } else if (RunFucCode == 4 ){
             BPTrain.run_LMBP(InitialANN, ipPrefix, args[0], args[1], TotalIterationNum);
+        } else{
+            BPTrain.run_BayRegBPTrain(InitialANN, ipPrefix, args[0], args[1], TotalIterationNum);
         }
         //BPTrain.run_SDBP_MomentumVL(InitialANN, ipPrefix, args[0], args[1], TotalIterationNum, 0.8, 1.05, 0.7, 0.04);
         //BPTrain.run_CGBP(InitialANN, ipPrefix, args[0], args[1], TotalIterationNum);

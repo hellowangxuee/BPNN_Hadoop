@@ -12,10 +12,10 @@ import java.util.Random;
  */
 public class test3 {
     public static void main(String[] args) throws Exception{
-        for(int i=0;i<1000;i++){
-            Random random=new Random();
-            System.out.println(random.nextGaussian());
-        }
+        Double k=0.0;
+        int t=Igigive(k);
+        System.out.println(k);
+        System.out.println(t);
 //        String PathPrefix = "hdfs://Master:9000/user/mlx/temex_TEST1/SDBP_MOVL-";
 //        for (int i = 0; i < 13; i++) {
 //            String path = PathPrefix + String.valueOf(i);
@@ -31,5 +31,9 @@ public class test3 {
 //        for(int i=0;i<F.length;i++){
 //            System.out.println(F[i]);
 //        }
+    }
+
+    public static int Igigive(Double a){
+        return 2;
     }
 }

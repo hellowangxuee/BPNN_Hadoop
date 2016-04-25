@@ -14,6 +14,8 @@
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/HDFS_IO/ReadNWrite.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Zhess.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Zqrd.java
+/home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/MapReduce/BayRegBPTrain_Map.java
+/home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/NeuralNetwork/ANN_Train.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/StandAloneNN/SA_CGBP.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Inv.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Zhqrd.java
@@ -26,6 +28,7 @@
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/NeuralNetwork/NeuronLayer.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/MapReduce/BPTrain_Reduce.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Z.java
+/home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/MapReduce/BayRegBPTrain_Reduce.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Times.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Print.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Zutmat.java
@@ -34,6 +37,7 @@
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Norm.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/House.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Schur.java
+/home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/StandAloneNN/BayesianRegularization_LMBP.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/mult.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/test3.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/test.java
