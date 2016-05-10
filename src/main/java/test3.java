@@ -1,6 +1,8 @@
+import FileIO.FileReadNWrite;
 import Jampack.JampackException;
 import MapReduce.BPTrain;
 import NeuralNetwork.ArtificialNeuralNetwork;
+import com.sun.javafx.binding.DoubleConstant;
 import com.sun.nio.sctp.PeerAddressChangeNotification;
 
 import java.io.IOException;
@@ -11,16 +13,25 @@ import java.util.Random;
  * Created by mlx on 4/2/16.
  */
 public class test3 {
-    public static void main(String[] args) throws Exception{
-        Double k=0.0;
-        int t=Igigive(k);
-        System.out.println(k);
-        System.out.println(t);
-//        String PathPrefix = "hdfs://Master:9000/user/mlx/temex_TEST1/SDBP_MOVL-";
-//        for (int i = 0; i < 13; i++) {
-//            String path = PathPrefix + String.valueOf(i);
-//            Map<String, Double> map = BPTrain.getWeightUpdatesFromFile(path);
-//            System.out.println(String.valueOf(i) + "\t" + String.valueOf(map.get("MeanSquareError")));
+    public static void main(String[] args) throws JampackException, IOException {
+        for(int i=0;i<100;i++) {
+            System.out.println(getRandomNum(0, 1));
+        }
+
+//        String PathPrefix = "hdfs://Master:9000/user/mlx/BayRegTrain/BRBP_G-";
+//        for (int i = 0; ; i++) {
+//            try {
+//                String path = PathPrefix + String.valueOf(i);
+//                Map<String, Double> map = BPTrain.getWeightUpdatesFromFile(path);
+//                double MSE=map.get("MeanSquareError");
+//                if (String.valueOf(MSE).equals("null")){
+//                    break;
+//                }
+//                System.out.println(String.valueOf(i) + "\t" + String.valueOf(map.get("MeanSquareError")));
+//            }
+//            catch (Exception E){
+//                break;
+//            }
 //        }
 //        int InputNum = 41;
 //        int LayerNum = 3;
@@ -32,8 +43,8 @@ public class test3 {
 //            System.out.println(F[i]);
 //        }
     }
-
-    public static int Igigive(Double a){
-        return 2;
+    public static int getRandomNum(int m,int n) {
+        return (m + (int) (Math.random() * (n - m + 1)));
     }
+
 }

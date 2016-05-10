@@ -80,7 +80,7 @@ public class BPTrain {
         FileInputFormat.addInputPath(job, new Path(Input));
         FileOutputFormat.setOutputPath(job, new Path(Output));
 
-        job.setNumReduceTasks(5);
+        job.setNumReduceTasks(1);
 
         return job;
     }
@@ -613,9 +613,9 @@ public class BPTrain {
 //        int[] NumEachLayer = {7, 10, 1};
 //        int[] IndexEachLayer = {1, 4, 4};
         int InputNum = 1;
-        int LayerNum = 3;
-        int[] NumEachLayer = {10, 10, 1};
-        int[] IndexEachLayer = {1, 1, 3};
+        int LayerNum = 2;
+        int[] NumEachLayer = {2,1};
+        int[] IndexEachLayer = {1, 3};
 
         ArtificialNeuralNetwork InitialANN = new ArtificialNeuralNetwork(InputNum, LayerNum, NumEachLayer, IndexEachLayer);
 

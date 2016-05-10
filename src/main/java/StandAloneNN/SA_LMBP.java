@@ -2,28 +2,23 @@ package StandAloneNN;
 
 import FileIO.FileReadNWrite;
 import Jampack.*;
-import NeuralNetwork.ANN_Train;
 import NeuralNetwork.ArtificialNeuralNetwork;
-import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Vector;
 
 import static FileIO.FileReadNWrite.readTxtFile;
 
 /**
- * Created by mlx on 4/20/16.
+ * Created by mlx on 5/7/16.
  */
-public class BayesianRegularization_LMBP {
+public class SA_LMBP {
     public static void main(String[] args) throws JampackException, IOException {
-        Vector<Double[]> TrainData = readTxtFile("/home/mlx/Documents/DataSet/StandAloneFuncTrainData");
+        Vector<Double[]> TrainData = readTxtFile("/home/mlx/Documents/DataSet/StandAloneFuncTrainData_WithNoise");
         Vector<Double[]> TestData = readTxtFile("/home/mlx/Documents/DataSet/StandAloneFuncTestData");
 
         ArtificialNeuralNetwork FinalANN = null;
-        //FinalANN= ANN_Train.BayReg_BPTrain(TrainData,InputNum,LayerNum,NumEachLayer,IndexEachLayer,0.001);
-
         int InputNum = 1;
         int LayerNum = 3;
         int[] NumEachLayer = {5, 7, 1};
@@ -32,9 +27,6 @@ public class BayesianRegularization_LMBP {
 
         boolean IfFindSolution = false;
         for (int TryTime=0;!IfFindSolution;TryTime++) {
-            double BETA = 1;
-            double ALPHA = 0.01;
-            double GAMMA = 0.0;
             int ParaNum = 0;
 
             FinalANN = new ArtificialNeuralNetwork(InputNum, LayerNum, NumEachLayer, IndexEachLayer);
@@ -43,30 +35,25 @@ public class BayesianRegularization_LMBP {
                 ParaNum += FinalANN.getANN()[i].getNeuronNum() * (FinalANN.getANN()[i].getInputNum() + 1);
             }
 
-
             double[][] ErrVec = new double[NumEachLayer[NumEachLayer.length - 1]][1];
             double[][] ForwardResult;
 
             double[][] ErrArr = new double[TrainData.size()][1];
             Zmat TotalJacobianMatrix = null;
-            GAMMA = ParaNum;
 
             System.out.println(String.valueOf(ParaNum));
-            System.out.println("TryTime"+"\t"+"Ite" + "\t" + "ALPHA" + "\t" + "BETA" + "\t" + "ALPHA / BETA" + "\t" + "GAMMA" + "\t" + "SquareErr/TrainData.size()");
+            System.out.println("TryTime" + "\t" + "Ite" + "\t" + "MSE\tmiu");
 
-            HashSet h = new HashSet();
+            double ThisErrorSum = 0.0;
+            double LastErrorSum = 0.0;
+            double miu = 0.001;
+            ArtificialNeuralNetwork UpdatesANN = null;
             try {
                 for (int Ite = 0; Ite < 2000; Ite++) {
                     double SquareErr = 0.0;
-                    double WeightSquareSum = FinalANN.getWeightSquareSum();
-
-                    int RandomNum = getRandomNum(0, TrainData.size() - 1);
-                    h.add(RandomNum);
+                    TotalJacobianMatrix = null;
                     for (int i = 0; i < TrainData.size(); i++) {
-                        while (!h.contains(RandomNum)) {
-                            RandomNum = getRandomNum(0, TrainData.size() - 1);
-                            h.add(RandomNum);
-                        }
+
                         Double[] temp = (TrainData.get(i));
                         double[][] InputVec = new double[InputNum][1];
                         for (int k = 0; k < temp.length - 1; k++) {
@@ -89,26 +76,34 @@ public class BayesianRegularization_LMBP {
                                 continue;
                             }
                         }
-                        RandomNum = getRandomNum(0, TrainData.size() - 1);
-                        h.add(RandomNum);
+                    }
+                    ThisErrorSum = SquareErr;
+
+                    System.out.println(String.valueOf(TryTime) + "\t" + String.valueOf(Ite) + "\t" + String.valueOf(SquareErr / TrainData.size())+"\t"+miu);
+                    if (ThisErrorSum / TrainData.size() < MSE_upbound) {
+                        IfFindSolution = true;
+                        break;
+                    } else if (Ite > 0) {
+                        if (ThisErrorSum < LastErrorSum) {
+                            miu /= 10;
+                            LastErrorSum = ThisErrorSum;
+                        } else {
+                            miu *= 10;
+                            FinalANN.updateWeightNetwork(ArtificialNeuralNetwork.multiplyNeuronLayers(UpdatesANN.getANN(), -1.0));
+                        }
+                    } else {
+                        LastErrorSum = ThisErrorSum;
                     }
 
-                    h.clear();
-
-                    ALPHA = GAMMA / (2 * WeightSquareSum);
-                    BETA = (TrainData.size() - GAMMA) / (2 * SquareErr);
                     Zmat H = Times.o(transpose.o(TotalJacobianMatrix), TotalJacobianMatrix);
-                    Zmat G = Plus.o(Times.o(new Z(2 * BETA, 0), H), Times.o(new Z(2 * ALPHA, 0), Eye.o(H.nr)));
-                    GAMMA = ParaNum - 2 * ALPHA / Trace.o((G)).re;
-//                    double miu = 0.0;
 //                    Eig EigOfH = new Eig(H);
-//                    double minEigValue = 2 * BETA * EigOfH.D.get0(H.nr - 1).re + 2 * ALPHA;
+//                    double minEigValue = EigOfH.D.get0(H.nr - 1).re;
 //                    if (minEigValue < 0 && miu + minEigValue < 0) {
 //                        miu += (-minEigValue);
 //                    }
-//                    G = Plus.o(G, Times.o(new Z(miu, 0), Eye.o(H.nr)));
+                    Zmat G = Plus.o(H, Times.o(new Z(miu, 0), Eye.o(H.nr)));
                     Zmat NetworkUpdates = Times.o(new Z(-1, 0), Times.o(Times.o(Inv.o(G), transpose.o(TotalJacobianMatrix)), new Zmat(ErrArr)));
-                    ArtificialNeuralNetwork UpdatesANN = new ArtificialNeuralNetwork(FinalANN.getANN());
+                    UpdatesANN = new ArtificialNeuralNetwork(FinalANN.getANN());
                     int LayerIndex = 0;
                     int NeuronIndex = 0;
                     int InputIndex = 0;
@@ -131,15 +126,13 @@ public class BayesianRegularization_LMBP {
                             UpdatesANN.setCertainWeight(LayerIndex, NeuronIndex, InputIndex, NetworkUpdates.get0(index, 0).re);
                         }
                     }
-                    FinalANN.updateWeightNetwork(UpdatesANN.getANN());
-                    System.out.println(String.valueOf(TryTime)+"\t"+String.valueOf(Ite) + "\t" + String.valueOf(ALPHA) + "\t" + String.valueOf(BETA) + "\t" + String.valueOf(ALPHA / BETA) + "\t" + String.valueOf(GAMMA) + "\t" + String.valueOf(SquareErr / TrainData.size()));
-                    if (SquareErr / TrainData.size() < MSE_upbound || Ite==1999) {
-                        IfFindSolution = true;
-                        break;
-                    }
+                    FinalANN.updateWeightNetwork(UpdatesANN);
+
+
+
                 }
             } catch (Exception e) {
-
+                System.out.println(e.toString());
             }
         }
 
@@ -158,12 +151,8 @@ public class BayesianRegularization_LMBP {
             TestErrSum+=(Tag-ForwardResult[0][0])*(Tag-ForwardResult[0][0]);
         }
         TestErrSum/=TestData.size();
-        System.out.println(TestErrSum);
+        System.out.println("\n"+TestErrSum);
         String[] SaveANN = FinalANN.saveANN();
-        FileReadNWrite.LocalWriteFile("/home/mlx/Documents/ResultANN/BayReg_LMBP_FinalANN", SaveANN);
-    }
-
-    public static int getRandomNum(int m,int n) {
-        return (m + (int) (Math.random() * (n - m + 1)));
+        FileReadNWrite.LocalWriteFile("/home/mlx/Documents/ResultANN/LMBP_FinalANN", SaveANN);
     }
 }

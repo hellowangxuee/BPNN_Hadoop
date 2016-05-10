@@ -86,13 +86,13 @@ public class LMBPTrain_Map extends
         for (; MSE > MSE_upperbound; ) {
             try {
                 Zmat H = Times.o(transpose.o(TotalJacobianMatrix), TotalJacobianMatrix);
-                int OrderOfH = H.nr;
-                Eig EigOfH = new Eig(H);
-                double minEigValue = EigOfH.D.get0(OrderOfH-1).re;
-                if (minEigValue < 0 && miu + minEigValue < 0) {
-                    miu += (-minEigValue);
-                }
-                Zmat G = Plus.o(H, Times.o(new Z(miu, 0), Eye.o(OrderOfH)));
+//                int OrderOfH = H.nr;
+//                Eig EigOfH = new Eig(H);
+//                double minEigValue = EigOfH.D.get0(OrderOfH-1).re;
+//                if (minEigValue < 0 && miu + minEigValue < 0) {
+//                    miu += (-minEigValue);
+//                }
+                Zmat G = Plus.o(H, Times.o(new Z(miu, 0), Eye.o(H.nr)));
                 Zmat NetworkUpdates = Times.o(new Z(-1, 0), Times.o(Times.o(Inv.o(G), transpose.o(TotalJacobianMatrix)), new Zmat(ErrArr)));
                 ArtificialNeuralNetwork UpdatesANN = new ArtificialNeuralNetwork(TrainingANN.getANN());
 

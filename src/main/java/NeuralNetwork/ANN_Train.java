@@ -22,7 +22,7 @@ public class ANN_Train {
         }
 
         ArtificialNeuralNetwork FinalANN = null;
-        for (int TryTime=0; !IfFindSolution && TryTime<5; TryTime++) {
+        for (int TryTime=0; !IfFindSolution && TryTime<10; TryTime++) {
             double BETA = 1;
             double ALPHA = 0.01;
             double GAMMA = ParaNum;
@@ -131,7 +131,7 @@ public class ANN_Train {
         double[][] ErrorArr = new double[TrainingData.size()][1];
         Zmat TotalJacobianMatrix = null;
         try {
-            for (int Ite = 0; Ite < 150; Ite++) {
+            for (int Ite = 0; Ite < 10; Ite++) {
                 double SquareErrSum = 0.0;
                 double WeightSquareSum = FinalANN.getWeightSquareSum();
                 for (int i = 0; i < TrainingData.size(); i++) {
@@ -156,6 +156,7 @@ public class ANN_Train {
                         }
                     }
                 }
+                SumUpdatesANN.MSEofCertainSet=SquareErrSum / TrainingData.size();
                 if (SquareErrSum / TrainingData.size() >= MSE_UpBound) {
                     ALPHA = GAMMA / (2 * WeightSquareSum);
                     BETA = (TrainingData.size() - GAMMA) / (2 * SquareErrSum);
@@ -197,9 +198,6 @@ public class ANN_Train {
                     }
                     FinalANN.updateWeightNetwork(UpdatesANN.getANN());
                     SumUpdatesANN.updateWeightNetwork(UpdatesANN.getANN());
-                }
-                else{
-                    SumUpdatesANN.MSEofCertainSet=SquareErrSum / TrainingData.size();
                 }
             }
         } catch (Exception e) {

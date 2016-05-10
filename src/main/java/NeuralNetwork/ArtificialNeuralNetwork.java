@@ -550,4 +550,20 @@ public class ArtificialNeuralNetwork implements Serializable {
         }
         return Min;
     }
+    public static double getNeuronLayerArrLength_norm_max(NeuronLayer[] ANN){
+        double Max=Double.MIN_VALUE;
+        for(int i=0;i<ANN.length;i++) {
+            for (int j = 0; j < ANN[i].getNeuronNum(); j++) {
+                for (int k = 0; k < ANN[i].getInputNum(); k++) {
+                    if (Math.abs(ANN[i].getCertainWeight(j, k)) >= Max) {
+                        Max = Math.abs(ANN[i].getCertainWeight(j, k));
+                    }
+                }
+                if (Math.abs(ANN[i].getCertainBias(j)) >= Max) {
+                    Max = Math.abs(ANN[i].getCertainBias(j));
+                }
+            }
+        }
+        return Max;
+    }
 }

@@ -40,7 +40,9 @@ public class FileReadNWrite {
             //打开一个写文件器，构造函数中的第二个参数true表示以追加形式写文件
             FileWriter writer = new FileWriter(filePath, true);
             for(int i=0;i<content.length;i++) {
-                writer.write(content[i]+"\n");
+                if (content[i]!=null) {
+                    writer.write(content[i] + "\n");
+                }
             }
             writer.close();
         } catch (IOException e) {
