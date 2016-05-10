@@ -2,26 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c5115a85-9741-4c98-8a31-4c0c14c1c7d2" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/StandAloneNN/SA_LMBP.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/StandAloneNN/SA_MOBP.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/StandAloneNN/SA_MOVLBP.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/StandAloneNN/SA_SDBP.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/TEP_Classification/PredictAccuracyCal.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/TEP_Classification/TEP_CGBP.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/TEP_Classification/TEP_MOVLBP.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/TEP_Classification/TEP_SDBP.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/TEP_Classification/TEP_VLBP.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/BPNeuralNetwork-1.0-SNAPSHOT.jar" afterPath="$PROJECT_DIR$/target/BPNeuralNetwork-1.0-SNAPSHOT.jar" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/MapReduce/BPTrain.class" afterPath="$PROJECT_DIR$/target/classes/MapReduce/BPTrain.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/TEP_Classification/TEP_LMBP.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/FileIO/FileReadNWrite.java" afterPath="$PROJECT_DIR$/src/main/java/FileIO/FileReadNWrite.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/MapReduce/BPTrain.java" afterPath="$PROJECT_DIR$/src/main/java/MapReduce/BPTrain.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/MapReduce/BayRegBPTrain_Map.java" afterPath="$PROJECT_DIR$/src/main/java/MapReduce/BayRegBPTrain_Map.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/NeuralNetwork/ANN_Train.java" afterPath="$PROJECT_DIR$/src/main/java/NeuralNetwork/ANN_Train.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/NeuralNetwork/ArtificialNeuralNetwork.java" afterPath="$PROJECT_DIR$/src/main/java/NeuralNetwork/ArtificialNeuralNetwork.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/StandAloneNN/BayesianRegularization_LMBP.java" afterPath="$PROJECT_DIR$/src/main/java/StandAloneNN/BayesianRegularization_LMBP.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/StandAloneNN/SA_CGBP.java" afterPath="$PROJECT_DIR$/src/main/java/StandAloneNN/SA_CGBP.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/test3.java" afterPath="$PROJECT_DIR$/src/main/java/test3.java" />
     </list>
     <ignored path="BPNeuralNetwork_Classification.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -58,21 +40,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="SA_CGBP.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/StandAloneNN/SA_CGBP.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="120" column="94" selection-start-line="32" selection-start-column="8" selection-end-line="120" selection-end-column="94" />
-              <folding>
-                <element signature="imports" expanded="false" />
-                <element signature="e#1713#1745#0" expanded="false" />
-                <element signature="e#5707#5708#0" expanded="false" />
-                <element signature="e#5771#5772#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="PredictAccuracyCal.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/TEP_Classification/PredictAccuracyCal.java">
           <provider selected="true" editor-type-id="text-editor">
@@ -97,16 +64,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="TEP_VLBP.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/TEP_Classification/TEP_VLBP.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="43" column="30" selection-start-line="43" selection-start-column="30" selection-end-line="43" selection-end-column="30" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="TEP_CGBP.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/TEP_Classification/TEP_CGBP.java">
           <provider selected="true" editor-type-id="text-editor">
@@ -125,9 +82,62 @@
       <file leaf-file-name="TEP_LMBP.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/TEP_Classification/TEP_LMBP.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-0.36363637">
-              <caret line="17" column="13" selection-start-line="17" selection-start-column="13" selection-end-line="17" selection-end-column="13" />
-              <folding />
+            <state vertical-scroll-proportion="0.6460177">
+              <caret line="171" column="24" selection-start-line="171" selection-start-column="24" selection-end-line="171" selection-end-column="24" />
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#8718#8719#0" expanded="true" />
+                <element signature="e#8782#8783#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SA_LMBP.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/StandAloneNN/SA_LMBP.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="97" column="92" selection-start-line="97" selection-start-column="92" selection-end-line="97" selection-end-column="92" />
+              <folding>
+                <element signature="e#4128#4174#0" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="LMBPTrain_Map.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/MapReduce/LMBPTrain_Map.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="94" column="68" selection-start-line="94" selection-start-column="68" selection-end-line="94" selection-end-column="68" />
+              <folding>
+                <element signature="e#3489#3527#0" expanded="false" />
+                <element signature="e#8511#8539#0" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BayRegBPTrain_Map.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/MapReduce/BayRegBPTrain_Map.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="108" column="73" selection-start-line="108" selection-start-column="73" selection-end-line="108" selection-end-column="73" />
+              <folding>
+                <element signature="e#4549#4589#0" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BayesianRegularization_LMBP.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/StandAloneNN/BayesianRegularization_LMBP.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="108" column="73" selection-start-line="108" selection-start-column="73" selection-end-line="108" selection-end-column="73" />
+              <folding>
+                <element signature="e#4369#4408#0" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -141,32 +151,6 @@
                 <element signature="method#averageNetwork#0;class#ArtificialNeuralNetwork#0" expanded="false" />
                 <element signature="method#multiplyuNetwork#0;class#ArtificialNeuralNetwork#0" expanded="false" />
                 <element signature="method#getMatF#0;class#ArtificialNeuralNetwork#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="CGBPTrain_Map.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/MapReduce/CGBPTrain_Map.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="108" column="90" selection-start-line="108" selection-start-column="68" selection-end-line="108" selection-end-column="90" />
-              <folding>
-                <element signature="imports" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="test3.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/test3.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="17" column="51" selection-start-line="17" selection-start-column="51" selection-end-line="17" selection-end-column="51" />
-              <folding>
-                <element signature="imports" expanded="false" />
-                <element signature="e#1666#1667#0" expanded="false" />
-                <element signature="e#1730#1731#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -206,7 +190,6 @@
         <option value="$PROJECT_DIR$/src/main/java/MapReduce/CGBPTrain_Reduce.java" />
         <option value="$PROJECT_DIR$/src/main/java/test2.java" />
         <option value="$PROJECT_DIR$/src/main/java/MapReduce/LMBPTrain_Reduce.java" />
-        <option value="$PROJECT_DIR$/src/main/java/MapReduce/LMBPTrain_Map.java" />
         <option value="$PROJECT_DIR$/src/main/java/MapReduce/CGBPTrain_Map.java" />
         <option value="$PROJECT_DIR$/src/main/java/MapReduce/ValidationMap.java" />
         <option value="$PROJECT_DIR$/src/main/java/MapReduce/ValidationReduce.java" />
@@ -218,10 +201,7 @@
         <option value="$PROJECT_DIR$/src/main/java/MapReduce/BayRegBPTrain_Reduce.java" />
         <option value="$PROJECT_DIR$/src/main/java/NeuralNetwork/NeuronLayer.java" />
         <option value="$PROJECT_DIR$/src/main/java/NeuralNetwork/ANN_Train.java" />
-        <option value="$PROJECT_DIR$/src/main/java/MapReduce/BayRegBPTrain_Map.java" />
         <option value="$PROJECT_DIR$/src/main/java/MapReduce/BPTrain.java" />
-        <option value="$PROJECT_DIR$/src/main/java/StandAloneNN/BayesianRegularization_LMBP.java" />
-        <option value="$PROJECT_DIR$/src/main/java/StandAloneNN/SA_LMBP.java" />
         <option value="$PROJECT_DIR$/src/main/java/StandAloneNN/SA_MOBP.java" />
         <option value="$PROJECT_DIR$/src/main/java/StandAloneNN/SA_SDBP.java" />
         <option value="$PROJECT_DIR$/src/main/java/StandAloneNN/SA_MOVLBP.java" />
@@ -234,6 +214,11 @@
         <option value="$PROJECT_DIR$/src/main/java/NeuralNetwork/ArtificialNeuralNetwork.java" />
         <option value="$PROJECT_DIR$/src/main/java/TEP_Classification/PredictAccuracyCal.java" />
         <option value="$PROJECT_DIR$/src/main/java/TEP_Classification/TEP_CGBP.java" />
+        <option value="$PROJECT_DIR$/src/main/java/StandAloneNN/SA_LMBP.java" />
+        <option value="$PROJECT_DIR$/src/main/java/MapReduce/LMBPTrain_Map.java" />
+        <option value="$PROJECT_DIR$/src/main/java/MapReduce/BayRegBPTrain_Map.java" />
+        <option value="$PROJECT_DIR$/src/main/java/StandAloneNN/BayesianRegularization_LMBP.java" />
+        <option value="$PROJECT_DIR$/src/main/java/TEP_Classification/TEP_LMBP.java" />
       </list>
     </option>
   </component>
@@ -1118,12 +1103,12 @@
       <workItem from="1462609314522" duration="7540000" />
       <workItem from="1462678699826" duration="18991000" />
       <workItem from="1462778193670" duration="18537000" />
-      <workItem from="1462843868161" duration="10227000" />
+      <workItem from="1462843868161" duration="10507000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="391918000" />
+    <option name="totallyTimeSpent" value="392198000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1136,7 +1121,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-1" y="28" width="1368" height="707" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32655367" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -1146,8 +1131,8 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.44328097" sideWeight="0.5151057" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32918552" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.37521815" sideWeight="0.48489425" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.36045197" sideWeight="0.48935038" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.37521815" sideWeight="0.48489425" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35951135" sideWeight="0.48935038" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.23413897" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -1420,13 +1405,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/MapReduce/BayRegBPTrain_Map.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="67" column="48" selection-start-line="67" selection-start-column="48" selection-end-line="67" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/Jampack/Eye.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1458,35 +1436,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/MapReduce/LMBPTrain_Map.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="19" selection-start-line="29" selection-start-column="19" selection-end-line="29" selection-end-column="19" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/MapReduce/BPTrain_Map.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="78" column="76" selection-start-line="78" selection-start-column="56" selection-end-line="78" selection-end-column="76" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/StandAloneNN/BayesianRegularization_LMBP.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="90" column="25" selection-start-line="81" selection-start-column="24" selection-end-line="90" selection-end-column="25" />
-          <folding>
-            <element signature="imports" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/StandAloneNN/SA_LMBP.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="37" column="12" selection-start-line="37" selection-start-column="12" selection-end-line="38" selection-end-column="37" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1653,16 +1606,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/TEP_Classification/TEP_MOVLBP.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="111" column="8" selection-start-line="111" selection-start-column="8" selection-end-line="111" selection-end-column="112" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/NeuralNetwork/ArtificialNeuralNetwork.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1685,6 +1628,57 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/StandAloneNN/SA_LMBP.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="97" column="92" selection-start-line="97" selection-start-column="92" selection-end-line="97" selection-end-column="92" />
+          <folding>
+            <element signature="e#4128#4174#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/MapReduce/LMBPTrain_Map.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="94" column="68" selection-start-line="94" selection-start-column="68" selection-end-line="94" selection-end-column="68" />
+          <folding>
+            <element signature="e#3489#3527#0" expanded="false" />
+            <element signature="e#8511#8539#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/MapReduce/BayRegBPTrain_Map.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="108" column="73" selection-start-line="108" selection-start-column="73" selection-end-line="108" selection-end-column="73" />
+          <folding>
+            <element signature="e#4549#4589#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/StandAloneNN/BayesianRegularization_LMBP.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="108" column="73" selection-start-line="108" selection-start-column="73" selection-end-line="108" selection-end-column="73" />
+          <folding>
+            <element signature="e#4369#4408#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/TEP_Classification/TEP_MOVLBP.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="111" column="8" selection-start-line="111" selection-start-column="8" selection-end-line="111" selection-end-column="112" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/TEP_Classification/TEP_CGBP.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1700,9 +1694,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/TEP_Classification/TEP_LMBP.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.36363637">
-          <caret line="17" column="13" selection-start-line="17" selection-start-column="13" selection-end-line="17" selection-end-column="13" />
-          <folding />
+        <state vertical-scroll-proportion="0.6460177">
+          <caret line="171" column="24" selection-start-line="171" selection-start-column="24" selection-end-line="171" selection-end-column="24" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#8718#8719#0" expanded="true" />
+            <element signature="e#8782#8783#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
