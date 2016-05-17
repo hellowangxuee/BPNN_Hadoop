@@ -128,8 +128,6 @@ public class SA_LMBP {
                     }
                     FinalANN.updateWeightNetwork(UpdatesANN);
 
-
-
                 }
             } catch (Exception e) {
                 System.out.println(e.toString());

@@ -10,6 +10,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Created by mlx on 3/11/16.
@@ -51,8 +52,13 @@ public class BPTrain_Reduce extends
                     SumOfWeightChanges += val.get();
                 }
                 double AveOfWeightChanges = SumOfWeightChanges / NumOfWeightChanges;
-
-                context.write(key, new DoubleWritable(AveOfWeightChanges));
+                if (AveOfWeightChanges < 10) {
+                    context.write(key, new DoubleWritable(AveOfWeightChanges));
+                }
+                else{
+                    Random r=new Random();
+                    context.write(key, new DoubleWritable(Math.sqrt(0.01)* r.nextGaussian()));
+                }
             }
         } else {
             if (key.toString().equals("SquareError")) {
@@ -73,7 +79,6 @@ public class BPTrain_Reduce extends
                 }
                 double AveOfWeightChanges = SumOfWeightChanges / NumOfWeightChanges;
                 double LastUpdateValue = this.LastUpdateMap.get(key.toString());
-
 
                 context.write(key, new DoubleWritable(this.Momentum * LastUpdateValue + (1 - this.Momentum) * AveOfWeightChanges));
             }

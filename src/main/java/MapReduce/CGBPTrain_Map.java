@@ -29,7 +29,7 @@ public class CGBPTrain_Map extends
     private Text Windex = new Text();
     private Text Bindex = new Text();
     private String ANN_path = "";
-    private double ErrorUpperBound = 0.05;
+    private double ErrorUpperBound = 0.001;
     private double LeastGradientLength = 1E-6;
 
 
@@ -40,125 +40,96 @@ public class CGBPTrain_Map extends
 
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
-
         getANNPath(context);
-
-        //pure text to String
         String line = value.toString();
-
-        // 将输入的数据首先按行进行分割
-        StringTokenizer tokenizerArticle = new StringTokenizer(line, "\n");
+        String[] LineDataArr = line.split(";");
+        Vector<Double[]> InputPair = new Vector<Double[]>();
+        for (int k = 0; k < LineDataArr.length; k++) {
+            String[] OneEntry = LineDataArr[k].split("\t");
+            Double[] EntryArr = new Double[OneEntry.length];
+            for (int t = 0; t < OneEntry.length; t++) {
+                EntryArr[t] = Double.parseDouble(OneEntry[t]);
+            }
+            InputPair.add(EntryArr);
+        }
 
         //establish a ANN from existing file
         ArtificialNeuralNetwork TrainingANN = new ArtificialNeuralNetwork(ANN_path);
         ArtificialNeuralNetwork BatchStore = new ArtificialNeuralNetwork(TrainingANN.getANN());
-        ArtificialNeuralNetwork GradientStore = new ArtificialNeuralNetwork(TrainingANN.getANN());
-        BatchStore.clearNetwork();
-        GradientStore.clearNetwork();
-
-        double HeuristicStep = 0.1;
-        double SquErrSum = 0;
-        int EntryNum = 0;
+        ArtificialNeuralNetwork TotalUpdates = new ArtificialNeuralNetwork(TrainingANN.getANN());
+        TotalUpdates.clearNetwork();
         int ParaNum = 0;
         for (int i = 0; i < TrainingANN.getLayerNum(); i++) {
             ParaNum += TrainingANN.getANN()[i].getNeuronNum() * (TrainingANN.getANN()[i].getInputNum() + 1);
         }
 
+        double HeuristicStep = 0.1;
         NeuronLayer[] LastGenerationGradient = null;
         NeuronLayer[] LastGenerationDirection = null;
+        double[][] ForwardResult = null;
+        double[][] ErrVec = new double[TrainingANN.getOutputNum()][1];
 
-        Vector<Double[]> InputDataVector = new Vector<Double[]>();
-
-        //Data+Tag,transfer them into double
-        for (; tokenizerArticle.hasMoreElements(); EntryNum++) {
-            String[] DataArr = tokenizerArticle.nextToken().split("\t");
-            Double[] WholeInput = new Double[DataArr.length];
-
-            double Tag = Double.parseDouble(DataArr[DataArr.length - 1]);
-            double[][] InputVec = new double[DataArr.length - 1][1];
-            for (int i = 0; i < DataArr.length - 1; i++) {
-                InputVec[i][0] = Double.parseDouble(DataArr[i]);
-                WholeInput[i] = InputVec[i][0];
+        for (int time = 0; time < ParaNum; time++) {
+            double SE = 0;
+            BatchStore.clearNetwork();
+            for (int p = 0; p < InputPair.size(); p++) {
+                Double[] OneEntry = InputPair.get(p);
+                double Tag = OneEntry[OneEntry.length - 1];
+                double[][] InputVec = new double[TrainingANN.getInputNum()][1];
+                for (int k = 0; k < OneEntry.length - 1; k++) {
+                    InputVec[k][0] = OneEntry[k];
+                }
+                ForwardResult = TrainingANN.getForwardResult(InputVec);
+                ErrVec[0][0] = Tag - ForwardResult[0][0];
+                SE += Math.pow(ErrVec[0][0], 2);
+                BatchStore.updateWeightNetwork(TrainingANN.getErrorGradient(ErrVec));
             }
-            WholeInput[DataArr.length - 1] = Tag;
-            InputDataVector.add(WholeInput);
+            if (time == 0) {
+                context.write(new Text("SquareError"), new DoubleWritable(SE / InputPair.size()));
+            }
 
-            double[][] ForwardResult = TrainingANN.getForwardResult(InputVec);
-            double[][] ErrVec = new double[TrainingANN.getOutputNum()][1];
-            ErrVec[0][0] = Tag - ForwardResult[0][0];
-
-            GradientStore.updateWeightNetwork(TrainingANN.getErrorGradient(ErrVec));
-
-            SquErrSum += ErrVec[0][0] * ErrVec[0][0];
-            context.write(new Text("SquareError"), new DoubleWritable(ErrVec[0][0] * ErrVec[0][0]));
-        }
-        double MSE = SquErrSum / EntryNum;
-
-        NeuronLayer[] UpdatesDirection = null;
-        NeuronLayer[] SearchDirection = null;
-        for (int LineNum = 0; MSE >= ErrorUpperBound; LineNum++) {
-            GradientStore.averageNetwork(EntryNum);
-            NeuronLayer[] ThisGenerationGradient = GradientStore.getANN();
-            double GradientLength = ArtificialNeuralNetwork.getNeuronLayerArrLength_norm2(ThisGenerationGradient);
-            if (GradientLength < LeastGradientLength) {
+            BatchStore.averageNetwork(InputPair.size());
+            NeuronLayer[] ThisGenerationGradient = BatchStore.getANN();
+            NeuronLayer[] UpdatesDirection = null;
+            NeuronLayer[] SearchDirection = null;
+            double LengthOfGradient = ArtificialNeuralNetwork.getNeuronLayerArrLength_norm2(ThisGenerationGradient);
+            if ((SE / InputPair.size() < ErrorUpperBound) || (LengthOfGradient < LeastGradientLength)) {
                 break;
             }
-            if (LineNum % ParaNum == 0) {
+
+            if (time % ParaNum == 0) {
                 SearchDirection = ArtificialNeuralNetwork.multiplyNeuronLayers(ThisGenerationGradient, -1.0);
             } else {
                 SearchDirection = ArtificialNeuralNetwork.getFR_CGD(ThisGenerationGradient, LastGenerationGradient, LastGenerationDirection);
             }
-            double[] IntervalLocation = LinearSearchMinumum.getIntervalLocation(TrainingANN, InputDataVector, SearchDirection, HeuristicStep);
-            double OptimumLearningRate = LinearSearchMinumum.getTolerableMinimum(TrainingANN, InputDataVector, SearchDirection, IntervalLocation, 0.02);
+            double[] IntervalLocation = LinearSearchMinumum.getIntervalLocation(TrainingANN, InputPair, SearchDirection, HeuristicStep);
+            double OptimumLearningRate = LinearSearchMinumum.getTolerableMinimum(TrainingANN, InputPair, SearchDirection, IntervalLocation, 0.02);
             UpdatesDirection = ArtificialNeuralNetwork.multiplyNeuronLayers(SearchDirection, OptimumLearningRate);
-
             TrainingANN.updateWeightNetwork(UpdatesDirection);
-            BatchStore.updateWeightNetwork(UpdatesDirection);
-
-            SquErrSum = 0;
-            GradientStore.clearNetwork();
-            for (int i = 0; i < InputDataVector.size(); i++) {
-                double[][] InputVec = new double[TrainingANN.getInputNum()][1];
-                for (int j = 0; j < TrainingANN.getInputNum(); j++) {
-                    InputVec[j][0] = ((Double[]) (InputDataVector.get(i)))[j];
-                }
-                double[][] ForwardResult1 = TrainingANN.getForwardResult(InputVec);
-
-                double[][] ErrVec = new double[TrainingANN.getOutputNum()][1];
-                ErrVec[0][0] = ((Double[]) (InputDataVector.get(i)))[TrainingANN.getInputNum()] - ForwardResult1[0][0];
-                GradientStore.updateWeightNetwork(TrainingANN.getErrorGradient(ErrVec));
-
-                SquErrSum += Math.pow(ErrVec[0][0], 2);
-            }
-            MSE = SquErrSum / EntryNum;
-
+            TotalUpdates.updateWeightNetwork(UpdatesDirection);
             LastGenerationGradient = ThisGenerationGradient;
             LastGenerationDirection = SearchDirection;
         }
-        //if (true/*ArtificialNeuralNetwork.getNeuronLayerArrLength_norm2(BatchStore.getANN()) < Double.POSITIVE_INFINITY*/) {
-        for (int i = 0; i < BatchStore.getANN().length; i++) {
-            for (int j = 0; j < BatchStore.getANN()[i].getNeuronNum(); j++) {
-                for (int k = 0; k < BatchStore.getANN()[i].getInputNum(); k++) {
+
+        for (int i = 0; i < TotalUpdates.getANN().length; i++) {
+            for (int j = 0; j < TotalUpdates.getANN()[i].getNeuronNum(); j++) {
+                for (int k = 0; k < TotalUpdates.getANN()[i].getInputNum(); k++) {
                     String WeightIndex = "W-" + String.valueOf(i) + "-";
                     WeightIndex += String.valueOf(j) + "-" + String.valueOf(k);
                     Windex.set(WeightIndex);
-                    context.write(Windex, new DoubleWritable(BatchStore.getANN()[i].getCertainWeight(j, k)));
-                    //System.out.println(WeightIndex + "\t" + String.valueOf(BatchStore.getANN()[i].getCertainWeight(j, k)));
+                    context.write(Windex, new DoubleWritable(TotalUpdates.getANN()[i].getCertainWeight(j, k)));
+
                 }
             }
         }
-        for (int i = 0; i < BatchStore.getANN().length; i++) {
-            for (int j = 0; j < BatchStore.getANN()[i].getNeuronNum(); j++) {
+        for (int i = 0; i < TotalUpdates.getANN().length; i++) {
+            for (int j = 0; j < TotalUpdates.getANN()[i].getNeuronNum(); j++) {
                 String BiasIndex = "B-" + String.valueOf(i) + "-";
                 BiasIndex += String.valueOf(j);
                 Bindex.set(BiasIndex);
-                context.write(Bindex, new DoubleWritable(BatchStore.getANN()[i].getCertainBias(j)));
-                //System.out.println(BiasIndex + "\t" + String.valueOf(BatchStore.getANN()[i].getCertainBias(j)));
+                context.write(Bindex, new DoubleWritable(TotalUpdates.getANN()[i].getCertainBias(j)));
             }
         }
-//        }
-//        BatchStore.clearNetwork();
-//        GradientStore.clearNetwork();
     }
 }
 

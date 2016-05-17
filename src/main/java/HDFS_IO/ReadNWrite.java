@@ -35,42 +35,41 @@ public class ReadNWrite {
             return true;
         }
     }
+    public static boolean hdfs_createDir(String filePath) throws IOException {
+        Configuration conf = new Configuration();
 
-//    public static String[] hdfs_Read(String filePath) throws IOException {
-//        String[] ContentArr = null;
-//
-//        logger = Logger.getLogger(ReadNWrite.class.getName());
-//
-//        Configuration conf = new Configuration();
-//        conf.set("hadoop.job.ugi", "hadoop-user,hadoop-user");
-//        //FileSystem是用户操作HDFS的核心类，它获得URI对应的HDFS文件系统
-//        FileSystem fs = FileSystem.get(URI.create(filePath), conf);
-//        FSDataInputStream in = null;
-//        String contentStr = "";
-//        try {
-//            in = fs.open(new Path(filePath));
-//            byte[] ContentBuff = new byte[2048];
-//            int bytesRead=0;
-//            while( (bytesRead=in.read(ContentBuff))>0 ) {
-//                if(ContentBuff[2047]!=0){
-//                    contentStr+=new String(ContentBuff);
-//                }
-//                else {
-//                    for (byte b : ContentBuff) {
-//                        if (b != 0) {
-//                            contentStr += (char) b;
-//                        }
-//                    }
-//                }
-//            }
-//            ContentArr = contentStr.split("\n");
-//        } catch (Exception e) {
-//            logger.error("ReadHDFS_Error:\t" + e.toString());
-//        } finally {
-//            IOUtils.closeStream(in);
-//            return ContentArr;
-//        }
-//    }
+        conf.addResource(new Path("/usr/local/hadoop/etc/hadoop/core-site.xml"));
+        conf.addResource(new Path("/usr/local/hadoop/etc/hadoop/hdfs-site.xml"));
+
+        FileSystem fs = FileSystem.get(conf);
+        Path f=new Path(filePath);
+        if(!fs.exists(f)){
+            fs.mkdirs(f);
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    public static boolean hdfs_delete(String filePath) throws IOException {
+        Configuration conf = new Configuration();
+
+        conf.addResource(new Path("/usr/local/hadoop/etc/hadoop/core-site.xml"));
+        conf.addResource(new Path("/usr/local/hadoop/etc/hadoop/hdfs-site.xml"));
+
+        FileSystem fs = FileSystem.get(conf);
+        Path f=new Path(filePath);
+        if(fs.exists(f)){
+            fs.delete(f,true);
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+
 
     public static Vector hdfs_Read(String filePath) throws IOException {
         Vector vet = new Vector();
@@ -128,21 +127,21 @@ public class ReadNWrite {
 
     }
 
-    public static boolean Write(String[] ContentArr,String DesPath) throws IOException {
-        boolean SuccOrNot = true;
-        logger = Logger.getLogger(ReadNWrite.class.getName());
-        FileWriter fos = new FileWriter(DesPath);
-        BufferedWriter bw = new BufferedWriter(fos);
-        try {
-            for (int i = 0; i < ContentArr.length; i++) {
-                bw.write(ContentArr[i] + "\n");
-            }
-        } catch (Exception e) {
-            logger.error("WriteHDFS_Error:\t" + e.toString());
-            SuccOrNot = false;
-        } finally {
-            bw.close();
-            return SuccOrNot;
-        }
-    }
+//    public static boolean Write(String[] ContentArr,String DesPath) throws IOException {
+//        boolean SuccOrNot = true;
+//        logger = Logger.getLogger(ReadNWrite.class.getName());
+//        FileWriter fos = new FileWriter(DesPath);
+//        BufferedWriter bw = new BufferedWriter(fos);
+//        try {
+//            for (int i = 0; i < ContentArr.length; i++) {
+//                bw.write(ContentArr[i] + "\n");
+//            }
+//        } catch (Exception e) {
+//            logger.error("WriteHDFS_Error:\t" + e.toString());
+//            SuccOrNot = false;
+//        } finally {
+//            bw.close();
+//            return SuccOrNot;
+//        }
+//    }
 }

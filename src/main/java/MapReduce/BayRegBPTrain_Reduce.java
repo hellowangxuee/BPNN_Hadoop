@@ -1,10 +1,12 @@
 package MapReduce;
 
+import Jampack.Rand;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
+import java.util.Random;
 
 /**
  * Created by mlx on 4/25/16.
@@ -23,14 +25,19 @@ public class BayRegBPTrain_Reduce extends
             }
             context.write(new Text("MeanSquareError"), new DoubleWritable(SumOfSquareError / num));
         } else {
-
             int WeightCount = 0;
             double SumOfWeightChanges = 0.0;
             for (DoubleWritable val : values) {
                 WeightCount++;
                 SumOfWeightChanges += val.get();
             }
-            context.write(key, new DoubleWritable(SumOfWeightChanges / WeightCount));
+            if(Math.abs(SumOfWeightChanges / WeightCount ) <= 10){
+                context.write(key, new DoubleWritable(SumOfWeightChanges / WeightCount));
+            }
+            else {
+                Random r=new Random();
+                context.write(key, new DoubleWritable(Math.sqrt(0.01)* r.nextGaussian()));
+            }
         }
     }
 }

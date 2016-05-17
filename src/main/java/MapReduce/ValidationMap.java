@@ -27,24 +27,23 @@ public class ValidationMap extends
 
         //pure text to String
         String line = value.toString();
+        String[] LineDataArr = line.split(";");
         //establish a ANN from existing file
         ArtificialNeuralNetwork TrainingANN = new ArtificialNeuralNetwork(ANN_path);
 
         // 将输入的数据首先按行进行分割
-        StringTokenizer tokenizerArticle = new StringTokenizer(line, "\n");
-        while (tokenizerArticle.hasMoreElements()) {
-            String[] DataArr = tokenizerArticle.nextToken().split("\t");
+        double SE = 0.0;
+        double[][] ForwardResult = null;
+        for (int EntryNum = 0; EntryNum < LineDataArr.length; EntryNum++) {
+            String[] DataArr = LineDataArr[EntryNum].split("\t");
             double Tag = Double.parseDouble(DataArr[DataArr.length - 1]);
             double[][] InputVec = new double[DataArr.length - 1][1];
             for (int i = 0; i < DataArr.length - 1; i++) {
                 InputVec[i][0] = Double.parseDouble(DataArr[i]);
             }
-
-            double[][] ForwardResult = TrainingANN.getForwardResult(InputVec);
-            double[][] ErrVec = new double[ForwardResult.length][1];
-
-            ErrVec[0][0] = Tag - ForwardResult[0][0];
-            context.write(new Text("SquareError"), new DoubleWritable(ErrVec[0][0] * ErrVec[0][0]));
+            ForwardResult = TrainingANN.getForwardResult(InputVec);
+            SE += (Tag - ForwardResult[0][0]) * (Tag - ForwardResult[0][0]);
         }
+        context.write(new Text("SquareError"), new DoubleWritable(SE / LineDataArr.length));
     }
 }

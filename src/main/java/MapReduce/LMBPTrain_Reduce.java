@@ -5,6 +5,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
+import java.util.Random;
 
 /**
  * Created by mlx on 4/4/16.
@@ -31,7 +32,13 @@ public class LMBPTrain_Reduce extends
                 WeightCount++;
                 SumOfWeightChanges += val.get();
             }
-            context.write(key, new DoubleWritable(SumOfWeightChanges / WeightCount));
+            if(Math.abs(SumOfWeightChanges / WeightCount ) <= 10){
+                context.write(key, new DoubleWritable(SumOfWeightChanges / WeightCount));
+            }
+            else {
+                Random r=new Random();
+                context.write(key, new DoubleWritable(Math.sqrt(0.01)* r.nextGaussian()));
+            }
         }
     }
 }

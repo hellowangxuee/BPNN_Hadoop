@@ -13,7 +13,7 @@ import static FileIO.FileReadNWrite.readTxtFile;
 public class PredictAccuracyCal {
     public static void main(String[] args) throws JampackException, IOException {
         Vector<Double[]> TestData = readTxtFile("/home/mlx/Documents/DataSet/TEP_TestData");
-        Vector<Double[]> ResultData = readTxtFile("/home/mlx/Documents/ProcessResult/TEP_CGBP_PreRe");
+        Vector<Double[]> ResultData = readTxtFile("/home/mlx/Documents/ProcessResult/TEP_BayRegBP_PreRe");
 
         for (double ClassThreshold = -0.0001; ClassThreshold < 1.1; ClassThreshold += 0.01) {
             int PreRightNum = 0;

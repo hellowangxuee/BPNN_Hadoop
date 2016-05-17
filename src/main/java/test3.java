@@ -4,6 +4,7 @@ import MapReduce.BPTrain;
 import NeuralNetwork.ArtificialNeuralNetwork;
 import com.sun.javafx.binding.DoubleConstant;
 import com.sun.nio.sctp.PeerAddressChangeNotification;
+import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
 import java.util.Map;
@@ -14,25 +15,26 @@ import java.util.Random;
  */
 public class test3 {
     public static void main(String[] args) throws JampackException, IOException {
-        for(int i=0;i<100;i++) {
-            System.out.println(getRandomNum(0, 1));
-        }
-
-//        String PathPrefix = "hdfs://Master:9000/user/mlx/BayRegTrain/BRBP_G-";
-//        for (int i = 0; ; i++) {
-//            try {
-//                String path = PathPrefix + String.valueOf(i);
-//                Map<String, Double> map = BPTrain.getWeightUpdatesFromFile(path);
-//                double MSE=map.get("MeanSquareError");
-//                if (String.valueOf(MSE).equals("null")){
-//                    break;
-//                }
-//                System.out.println(String.valueOf(i) + "\t" + String.valueOf(map.get("MeanSquareError")));
-//            }
-//            catch (Exception E){
-//                break;
-//            }
+//        for(int i=0;i<100;i++) {
+//            System.out.println(getRandomNum(0, 1));
 //        }
+
+        String PathPrefix = "hdfs://Master:9000/FuncSimu/VLBP_ValidationWithNoise_Func/VLBPValiWithNoise_Func-";
+        for (int i = 0; ; i++) {
+            try {
+                String path = PathPrefix + String.valueOf(i);
+                Map<String, Double> map = BPTrain.getWeightUpdatesFromFile(path);
+                double MSE=map.get("MeanSquareError");
+                if (String.valueOf(MSE).equals("null")){
+                    break;
+                }
+                System.out.println(String.valueOf(i) + "\t" + String.valueOf(map.get("MeanSquareError")));
+            }
+            catch (Exception E){
+                break;
+            }
+        }
+        //HDFS_IO.ReadNWrite.hdfs_createDir("hdfs://Master:9000/FuncSimu/BayRegBP-v4/");
 //        int InputNum = 41;
 //        int LayerNum = 3;
 //        int[] NumEachLayer = {7, 10, 1};
@@ -46,5 +48,6 @@ public class test3 {
     public static int getRandomNum(int m,int n) {
         return (m + (int) (Math.random() * (n - m + 1)));
     }
+
 
 }

@@ -21,6 +21,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.jobhistory.JobHistoryParser;
 import org.apache.hadoop.mapreduce.lib.aggregate.ValueAggregator;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
@@ -41,10 +42,10 @@ import java.util.*;
  */
 public class BPTrain {
 
-    private static Job getValidationJob(Configuration conf, String Time, String Input, String Output) throws Exception {
+    private static Job getValidationJob(Configuration conf, int IteNum,String Time, String Input, String Output) throws Exception {
         Job job = new Job(conf);
         job.setJarByClass(BPTrain.class);
-        job.setJobName("Validation~" + Time);
+        job.setJobName("Validation" + String.valueOf(IteNum) + "~" + Time);
 
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(DoubleWritable.class);
@@ -63,91 +64,97 @@ public class BPTrain {
         return job;
     }
 
-    private static Job getBayRegBP_SettedJob(Configuration conf, int IterationNum, String Time, String Input, String Output) throws Exception {
+    private static Job getBayRegBP_SettedJob(Configuration conf, int IterationNum, String Time, String[] Input, String Output) throws Exception {
         Job job = new Job(conf);
         job.setJarByClass(BPTrain.class);
         job.setJobName("BayRegBPTrain" + String.valueOf(IterationNum) + "~" + Time);
 
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(DoubleWritable.class);
-
-        job.setMapperClass(BayRegBPTrain_Map.class);
+        job.setOutputFormatClass(TextOutputFormat.class);
         job.setReducerClass(BayRegBPTrain_Reduce.class);
 
-        job.setInputFormatClass(TextInputFormat.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
+        job.setMapOutputKeyClass(Text.class);
+        job.setMapOutputValueClass(DoubleWritable.class);
 
-        FileInputFormat.addInputPath(job, new Path(Input));
+//        job.setMapperClass(BayRegBPTrain_Map.class);
+//        job.setInputFormatClass(TextInputFormat.class);
+//        FileInputFormat.addInputPath(job, new Path(Input[0]));
+        for (int i = 0; i < Input.length; i++) {
+            MultipleInputs.addInputPath(job, new Path(Input[i]), TextInputFormat.class, BayRegBPTrain_Map.class);
+        }
         FileOutputFormat.setOutputPath(job, new Path(Output));
-
         job.setNumReduceTasks(1);
-
         return job;
     }
 
-    private static Job getLMBP_SettedJob(Configuration conf, int IterationNum, String Time, String Input, String Output) throws Exception {
+    private static Job getLMBP_SettedJob(Configuration conf, int IterationNum, String Time, String[] Input, String Output) throws Exception {
         Job job = new Job(conf);
         job.setJarByClass(BPTrain.class);
         job.setJobName("LMBPTrain" + String.valueOf(IterationNum) + "~" + Time);
 
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(DoubleWritable.class);
-
-        job.setMapperClass(LMBPTrain_Map.class);
+        job.setOutputFormatClass(TextOutputFormat.class);
         job.setReducerClass(LMBPTrain_Reduce.class);
 
-        job.setInputFormatClass(TextInputFormat.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
+        job.setMapOutputKeyClass(Text.class);
+        job.setMapOutputValueClass(DoubleWritable.class);
 
-        FileInputFormat.addInputPath(job, new Path(Input));
+//        job.setMapperClass(BayRegBPTrain_Map.class);
+//        job.setInputFormatClass(TextInputFormat.class);
+//        FileInputFormat.addInputPath(job, new Path(Input[0]));
+        for (int i = 0; i < Input.length; i++) {
+            MultipleInputs.addInputPath(job, new Path(Input[i]), TextInputFormat.class, LMBPTrain_Map.class);
+        }
         FileOutputFormat.setOutputPath(job, new Path(Output));
-
-        job.setNumReduceTasks(5);
-
+        job.setNumReduceTasks(1);
         return job;
     }
 
-    private static Job getCGBP_SettedJob(Configuration conf, int IterationNum, String Time, String Input, String Output) throws Exception {
+    private static Job getCGBP_SettedJob(Configuration conf, int IterationNum, String Time, String[] Input, String Output) throws Exception {
         Job job = new Job(conf);
         job.setJarByClass(BPTrain.class);
         job.setJobName("CGBPTrain" + String.valueOf(IterationNum) + "~" + Time);
 
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(DoubleWritable.class);
-
-        job.setMapperClass(CGBPTrain_Map.class);
+        job.setOutputFormatClass(TextOutputFormat.class);
         job.setReducerClass(CGBPTrain_Reduce.class);
 
-        job.setInputFormatClass(TextInputFormat.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
-
-        FileInputFormat.addInputPath(job, new Path(Input));
+        job.setMapOutputKeyClass(Text.class);
+        job.setMapOutputValueClass(DoubleWritable.class);
+//        job.setMapperClass(BayRegBPTrain_Map.class);
+//        job.setInputFormatClass(TextInputFormat.class);
+//        FileInputFormat.addInputPath(job, new Path(Input[0]));
+        for (int i = 0; i < Input.length; i++) {
+            MultipleInputs.addInputPath(job, new Path(Input[i]), TextInputFormat.class, CGBPTrain_Map.class);
+        }
         FileOutputFormat.setOutputPath(job, new Path(Output));
-
-        job.setNumReduceTasks(5);
-
+        job.setNumReduceTasks(1);
         return job;
     }
 
-    private static Job getSDBP_SettedJob(Configuration conf, int IterationNum, String Time, String Input, String Output) throws Exception {
+    private static Job getSDBP_SettedJob(Configuration conf, int IterationNum, String Time, String[] Input, String Output) throws Exception {
         Job job = new Job(conf);
         job.setJarByClass(BPTrain.class);
         job.setJobName("SDBPTrain" + String.valueOf(IterationNum) + " " + Time);
 
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(DoubleWritable.class);
-
-        job.setMapperClass(BPTrain_Map.class);
+        job.setOutputFormatClass(TextOutputFormat.class);
         job.setReducerClass(BPTrain_Reduce.class);
 
-        job.setInputFormatClass(TextInputFormat.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
-
-        FileInputFormat.addInputPath(job, new Path(Input));
+        job.setMapOutputKeyClass(Text.class);
+        job.setMapOutputValueClass(DoubleWritable.class);
+//        job.setMapperClass(BayRegBPTrain_Map.class);
+//        job.setInputFormatClass(TextInputFormat.class);
+//        FileInputFormat.addInputPath(job, new Path(Input[0]));
+        for (int i = 0; i < Input.length; i++) {
+            MultipleInputs.addInputPath(job, new Path(Input[i]), TextInputFormat.class, BPTrain_Map.class);
+        }
         FileOutputFormat.setOutputPath(job, new Path(Output));
-
-        job.setNumReduceTasks(5);
-
+        job.setNumReduceTasks(1);
         return job;
     }
 
@@ -215,6 +222,29 @@ public class BPTrain {
             partPath = Path + "/part-r-" + fullStringNum(partNum);
         }
         return SE;
+    }
+
+    public static boolean checkIfContainsError(String Path) throws IOException {
+        int partNum = 0;
+        String partPath = Path + "/part-r-" + fullStringNum(partNum);
+        boolean isFind = false;
+        while (ReadNWrite.hdfs_isFileExist(partPath)) {
+            Vector WeightChangeArr = ReadNWrite.hdfs_Read(partPath);
+            for (int i = 0; i < WeightChangeArr.size(); i++) {
+                String[] IndexNChange = ((String) WeightChangeArr.get(i)).split("\t");
+                if (IndexNChange[0].equals("Error")) {
+                    ;
+                    isFind = true;
+                    break;
+                }
+            }
+            if (isFind) {
+                break;
+            }
+            partNum++;
+            partPath = Path + "/part-r-" + fullStringNum(partNum);
+        }
+        return isFind;
     }
 
     public static void discardCertainUpdateForANN(String oldANNPath, String WeightChangePath, String SavePath) throws IOException {
@@ -344,7 +374,7 @@ public class BPTrain {
         ReadNWrite.hdfs_Write(new_ANN_content, SavePath);
     }
 
-    private static void run_SDBP_Usual(ArtificialNeuralNetwork InitialANN, String ipPrefix, String InputPath, String OutputPath, int MaxIterationNum) throws Exception {
+    private static void run_SDBP_Usual(ArtificialNeuralNetwork InitialANN, String ipPrefix, String[] InputPath, String OutputPath, int MaxIterationNum) throws Exception {
         String[] pathArr = OutputPath.split("/");
         String pathPrefix = "";
         for (int i = 1; i < pathArr.length - 1; i++) {
@@ -375,7 +405,7 @@ public class BPTrain {
         }
     }
 
-    private static void run_SDBP_Momentum(ArtificialNeuralNetwork InitialANN, String ipPrefix, String InputPath, String OutputPath, int MaxIterationNum, double Momentum) throws Exception {
+    private static void run_SDBP_Momentum(ArtificialNeuralNetwork InitialANN, String ipPrefix, String[] InputPath, String OutputPath, int MaxIterationNum, double Momentum) throws Exception {
         String[] pathArr = OutputPath.split("/");
         String pathPrefix = "";
         for (int i = 1; i < pathArr.length - 1; i++) {
@@ -414,10 +444,10 @@ public class BPTrain {
         }
     }
 
-    //parameter "eta" controls the multiplying ratio for LearningRate to increase when the MSE decreases at one iteration;
-    //paremeter "rho" controls the multiplying ratio for LearningRate to decrease when the MSE increases more than "ksi" times at one iteration;
-    //paramete  "ksi" controls the upper bound ratio between two iteration MSE.If MSE of this iteration is more than "ksi" times than last iteration,we should take special measures;
-    private static void run_SDBP_MomentumVL(ArtificialNeuralNetwork InitialANN, String ipPrefix, String InputPath, String OutputPath, int MaxIterationNum, double Momentum, double eta, double rho, double ksi) throws Exception {
+    private static void run_SDBP_MomentumVL(ArtificialNeuralNetwork InitialANN, String ipPrefix,
+                                            String[] InputPath, String OutputPath,
+                                            int MaxIterationNum, double Momentum, double eta, double rho, double ksi)
+            throws Exception {
         String[] pathArr = OutputPath.split("/");
         String pathPrefix = "";
         for (int i = 1; i < pathArr.length - 1; i++) {
@@ -429,9 +459,7 @@ public class BPTrain {
         double VaryingLearningRate = 0.2;
         double VaryingMomentum;
 
-        double[] ValidationMSE=new double[MaxIterationNum];
-
-        for (int IterationNum = 0; IterationNum < MaxIterationNum; IterationNum++, lastIteSE = thisIteSE) {
+        for (int IterationNum = 0; IterationNum < MaxIterationNum; IterationNum++) {
             Configuration conf = new Configuration();
 
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");//设置日期格式
@@ -455,8 +483,15 @@ public class BPTrain {
                     conf.set("LearningRate", String.valueOf(VaryingLearningRate));
                     conf.set("LastUpdatePath", LastChangePath);
                     conf.set("Momentum", String.valueOf(VaryingMomentum));
+                    lastIteSE = thisIteSE;
 
-                } else if (0 <= SE_VaryingRate && SE_VaryingRate <= ksi) {
+                } else if (SE_VaryingRate > ksi) {
+                    String DiscardedUpdatePath = ipPrefix + OutputPath + "-" + String.valueOf(IterationNum - 2);
+                    BPTrain.discardCertainUpdateForANN(oldANNPath, DiscardedUpdatePath, newANNPath);
+                    conf.set("ThisIterationPath", newANNPath);
+                    VaryingLearningRate *= rho;
+                    conf.set("LearningRate", String.valueOf(VaryingLearningRate));
+                } else {
                     String LastChangePath = ipPrefix + OutputPath + "-" + String.valueOf(IterationNum - 2);
                     VaryingMomentum = Momentum;
 
@@ -465,14 +500,8 @@ public class BPTrain {
                     conf.set("LearningRate", String.valueOf(VaryingLearningRate));
                     conf.set("LastUpdatePath", LastChangePath);
                     conf.set("Momentum", String.valueOf(VaryingMomentum));
-                } else {
-                    String DiscardedUpdatePath = ipPrefix + OutputPath + "-" + String.valueOf(IterationNum - 2);
-                    BPTrain.discardCertainUpdateForANN(oldANNPath, DiscardedUpdatePath, newANNPath);
-                    conf.set("ThisIterationPath", newANNPath);
-                    VaryingLearningRate *= rho;
-                    conf.set("LearningRate", String.valueOf(VaryingLearningRate));
+                    lastIteSE = thisIteSE;
                 }
-
             } else if (IterationNum == 0) {
                 ReadNWrite.hdfs_Write(InitialANN.saveANN(), ipPrefix + pathPrefix + "/result_ANN-0");
                 conf.set("ThisIterationPath", ipPrefix + pathPrefix + "/result_ANN-0");
@@ -488,17 +517,103 @@ public class BPTrain {
 
                 conf.set("ThisIterationPath", newANNPath);
                 conf.set("LearningRate", String.valueOf(VaryingLearningRate));
+                lastIteSE = thisIteSE;
             }
-            String ValidationSetPath = "hdfs://Master:9000/user/mlx/ValidationSet";
-            String ValidationOutPath = OutputPath + "-Validation-" + String.valueOf(IterationNum);
-            Job ValiJob = getValidationJob(conf, TimeNow, ValidationSetPath, ValidationOutPath);
-            ValiJob.waitForCompletion(true);
-            ValidationMSE[IterationNum] = BPTrain.getMSEFromFile(ValidationOutPath);
-            if (IterationNum >= 3) {
-                if (ValidationMSE[IterationNum] > ValidationMSE[IterationNum - 1] && ValidationMSE[IterationNum] > ValidationMSE[IterationNum - 2] && ValidationMSE[IterationNum] > ValidationMSE[IterationNum - 3]) {
-                    break;
+            //Set job configs
+            String outPath = OutputPath + "-" + String.valueOf(IterationNum);
+            Job job = getSDBP_SettedJob(conf, IterationNum, TimeNow, InputPath, outPath);
+            job.waitForCompletion(true);
+        }
+    }
+
+
+    //parameter "eta" controls the multiplying ratio for LearningRate to increase when the MSE decreases at one iteration;
+    //paremeter "rho" controls the multiplying ratio for LearningRate to decrease when the MSE increases more than "ksi" times at one iteration;
+    //paramete  "ksi" controls the upper bound ratio between two iteration MSE.If MSE of this iteration is more than "ksi" times than last iteration,we should take special measures;
+    private static void run_SDBP_MomentumVL_Validation(ArtificialNeuralNetwork InitialANN, String ipPrefix, String[] InputPath, String OutputPath,
+                                                       int MaxIterationNum, double Momentum, double eta, double rho, double ksi)
+            throws Exception {
+        String[] pathArr = OutputPath.split("/");
+        String pathPrefix = "";
+        for (int i = 1; i < pathArr.length - 1; i++) {
+            pathPrefix += "/" + pathArr[i];
+        }
+        double thisIteSE = 0.0;
+        double lastIteSE = 0.0;
+
+        double VaryingLearningRate = 0.2;
+        double VaryingMomentum;
+
+        double[] ValidationMSE = new double[MaxIterationNum];
+
+        for (int IterationNum = 0; IterationNum < MaxIterationNum; IterationNum++) {
+            Configuration conf = new Configuration();
+
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");//设置日期格式
+            String TimeNow = df.format(new Date());
+
+            if (IterationNum >= 2) {
+                String oldANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum - 1);
+                String newANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum);
+                String ChangeValuePath = ipPrefix + OutputPath + "-" + String.valueOf(IterationNum - 1);
+
+                thisIteSE = BPTrain.getMSEFromFile(ChangeValuePath);
+
+                double SE_VaryingRate = ((thisIteSE - lastIteSE) / (lastIteSE));
+                if (SE_VaryingRate < 0) {
+                    String LastChangePath = ipPrefix + OutputPath + "-" + String.valueOf(IterationNum - 2);
+                    VaryingMomentum = Momentum;
+
+                    BPTrain.getNewANN_Usual(oldANNPath, ChangeValuePath, newANNPath);
+                    conf.set("ThisIterationPath", newANNPath);
+                    VaryingLearningRate *= eta;
+                    conf.set("LearningRate", String.valueOf(VaryingLearningRate));
+                    conf.set("LastUpdatePath", LastChangePath);
+                    conf.set("Momentum", String.valueOf(VaryingMomentum));
+                    lastIteSE = thisIteSE;
+
+                } else if (SE_VaryingRate > ksi) {
+                    String DiscardedUpdatePath = ipPrefix + OutputPath + "-" + String.valueOf(IterationNum - 2);
+                    BPTrain.discardCertainUpdateForANN(oldANNPath, DiscardedUpdatePath, newANNPath);
+                    conf.set("ThisIterationPath", newANNPath);
+                    VaryingLearningRate *= rho;
+                    conf.set("LearningRate", String.valueOf(VaryingLearningRate));
+                } else {
+                    String LastChangePath = ipPrefix + OutputPath + "-" + String.valueOf(IterationNum - 2);
+                    VaryingMomentum = Momentum;
+
+                    BPTrain.getNewANN_Usual(oldANNPath, ChangeValuePath, newANNPath);
+                    conf.set("ThisIterationPath", newANNPath);
+                    conf.set("LearningRate", String.valueOf(VaryingLearningRate));
+                    conf.set("LastUpdatePath", LastChangePath);
+                    conf.set("Momentum", String.valueOf(VaryingMomentum));
+                    lastIteSE = thisIteSE;
                 }
+
+            } else if (IterationNum == 0) {
+                ReadNWrite.hdfs_Write(InitialANN.saveANN(), ipPrefix + pathPrefix + "/result_ANN-0");
+                conf.set("ThisIterationPath", ipPrefix + pathPrefix + "/result_ANN-0");
+                conf.set("LearningRate", String.valueOf(VaryingLearningRate));
+            } else {
+                String oldANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum - 1);
+                String newANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum);
+                String ChangeValuePath = ipPrefix + OutputPath + "-" + String.valueOf(IterationNum - 1);
+                thisIteSE = BPTrain.getMSEFromFile(ChangeValuePath);
+                BPTrain.getNewANN_Usual(oldANNPath, ChangeValuePath, newANNPath);
+                conf.set("ThisIterationPath", newANNPath);
+                conf.set("LearningRate", String.valueOf(VaryingLearningRate));
+                lastIteSE = thisIteSE;
             }
+            String ValidationSetPath = "hdfs://Master:9000/FuncSimu/FuncValidationData";
+            String ValidationOutPath = OutputPath + "-Validation-" + String.valueOf(IterationNum);
+            Job ValiJob = getValidationJob(conf, IterationNum, TimeNow, ValidationSetPath, ValidationOutPath);
+            ValiJob.waitForCompletion(true);
+//            ValidationMSE[IterationNum] = BPTrain.getMSEFromFile(ValidationOutPath);
+//            if (IterationNum >= 3) {
+//                if (ValidationMSE[IterationNum] > ValidationMSE[IterationNum - 1] && ValidationMSE[IterationNum] > ValidationMSE[IterationNum - 2] && ValidationMSE[IterationNum] > ValidationMSE[IterationNum - 3]) {
+//                    break;
+//                }
+//            }
 
             //Set job configs
             String outPath = OutputPath + "-" + String.valueOf(IterationNum);
@@ -507,7 +622,7 @@ public class BPTrain {
         }
     }
 
-    private static void run_CGBP(ArtificialNeuralNetwork InitialANN, String ipPrefix, String InputPath, String OutputPath, int MaxIterationNum) throws Exception {
+    private static void run_CGBP(ArtificialNeuralNetwork InitialANN, String ipPrefix, String[] InputPath, String OutputPath, int MaxIterationNum) throws Exception {
         String[] pathArr = OutputPath.split("/");
         String pathPrefix = "";
         for (int i = 1; i < pathArr.length - 1; i++) {
@@ -539,143 +654,126 @@ public class BPTrain {
 
     }
 
-    private static void run_LMBP(ArtificialNeuralNetwork InitialANN, String ipPrefix, String InputPath, String OutputPath, int MaxIterationNum) throws Exception {
+    private static void run_LMBP(int InputNum, int LayerNum, int[] NumEachLayer, int[] IndexEachLayer, String ipPrefix, String[] InputPath, String OutputPath, int MaxIterationNum) throws Exception {
         String[] pathArr = OutputPath.split("/");
         String pathPrefix = "";
         for (int i = 1; i < pathArr.length - 1; i++) {
             pathPrefix += "/" + pathArr[i];
         }
-        for (int IterationNum = 0; IterationNum < MaxIterationNum; IterationNum++) {
-            Configuration conf = new Configuration();
+        int IterationNum = 0;
+        for (int trytime = 0; IterationNum < MaxIterationNum && trytime < 10; trytime++) {
+            ArtificialNeuralNetwork InitialANN = new ArtificialNeuralNetwork(InputNum, LayerNum, NumEachLayer, IndexEachLayer);
+            IterationNum = 0;
+            for (; IterationNum < MaxIterationNum; IterationNum++) {
+                Configuration conf = new Configuration();
 
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");//设置日期格式
-            String TimeNow = df.format(new Date());
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");//设置日期格式
+                String TimeNow = df.format(new Date());
 
-            if (IterationNum == 0) {
-                ReadNWrite.hdfs_Write(InitialANN.saveANN(), ipPrefix + pathPrefix + "/result_ANN-0");
-                conf.set("ThisIterationPath", ipPrefix + pathPrefix + "/result_ANN-0");
-            } else {
-                String oldANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum - 1);
-                String newANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum);
-                String ChangeValuePath = ipPrefix + OutputPath + "-" + String.valueOf(IterationNum - 1);
-
-                BPTrain.getNewANN_Usual(oldANNPath, ChangeValuePath, newANNPath);
-                conf.set("ThisIterationPath", newANNPath);
+                if (IterationNum == 0) {
+                    ReadNWrite.hdfs_Write(InitialANN.saveANN(), ipPrefix + pathPrefix + "/result_ANN-0");
+                    conf.set("ThisIterationPath", ipPrefix + pathPrefix + "/result_ANN-0");
+                } else {
+                    String oldANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum - 1);
+                    String newANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum);
+                    String ChangeValuePath = ipPrefix + OutputPath + "-" + String.valueOf(IterationNum - 1);
+                    if (checkIfContainsError(ChangeValuePath)) {
+                        HDFS_IO.ReadNWrite.hdfs_delete(ipPrefix + pathPrefix);
+                        HDFS_IO.ReadNWrite.hdfs_createDir(ipPrefix + pathPrefix);
+                        break;
+                    } else {
+                        BPTrain.getNewANN_Usual(oldANNPath, ChangeValuePath, newANNPath);
+                        conf.set("ThisIterationPath", newANNPath);
+                    }
+                }
+                //Set job configs
+                String outPath = OutputPath + "-" + String.valueOf(IterationNum);
+                Job job = BPTrain.getLMBP_SettedJob(conf, IterationNum, TimeNow, InputPath, outPath);
+                //hand in the job
+                job.waitForCompletion(true);
             }
-            //Set job configs
-            String outPath = OutputPath + "-" + String.valueOf(IterationNum);
-            Job job = BPTrain.getLMBP_SettedJob(conf, IterationNum, TimeNow, InputPath, outPath);
-            //hand in the job
-            job.waitForCompletion(true);
         }
     }
 
-    private static void run_BayRegBPTrain(ArtificialNeuralNetwork InitialANN, String ipPrefix, String InputPath, String OutputPath, int MaxIterationNum) throws Exception{
+    private static void run_BayRegBPTrain(int InputNum, int LayerNum, int[] NumEachLayer, int[] IndexEachLayer, String ipPrefix, String[] InputPath, String OutputPath, int MaxIterationNum) throws Exception {
         String[] pathArr = OutputPath.split("/");
         String pathPrefix = "";
         for (int i = 1; i < pathArr.length - 1; i++) {
             pathPrefix += "/" + pathArr[i];
         }
-        for (int IterationNum = 0; IterationNum < MaxIterationNum; IterationNum++) {
-            Configuration conf = new Configuration();
+        int IterationNum = 0;
+        for (int trytime = 0; IterationNum < MaxIterationNum && trytime < 10; trytime++) {
+            ArtificialNeuralNetwork InitialANN = new ArtificialNeuralNetwork(InputNum, LayerNum, NumEachLayer, IndexEachLayer);
+            IterationNum = 0;
+            for (; IterationNum < MaxIterationNum; IterationNum++) {
+                Configuration conf = new Configuration();
 
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");//设置日期格式
-            String TimeNow = df.format(new Date());
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");//设置日期格式
+                String TimeNow = df.format(new Date());
 
-            if (IterationNum == 0) {
-                ReadNWrite.hdfs_Write(InitialANN.saveANN(), ipPrefix + pathPrefix + "/result_ANN-0");
-                conf.set("ThisIterationPath", ipPrefix + pathPrefix + "/result_ANN-0");
-            } else {
-                String oldANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum - 1);
-                String newANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum);
-                String ChangeValuePath = ipPrefix + OutputPath + "-" + String.valueOf(IterationNum - 1);
-
-                BPTrain.getNewANN_Usual(oldANNPath, ChangeValuePath, newANNPath);
-                conf.set("ThisIterationPath", newANNPath);
+                if (IterationNum == 0) {
+                    ReadNWrite.hdfs_Write(InitialANN.saveANN(), ipPrefix + pathPrefix + "/result_ANN-0");
+                    conf.set("ThisIterationPath", ipPrefix + pathPrefix + "/result_ANN-0");
+                } else {
+                    String oldANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum - 1);
+                    String newANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum);
+                    String ChangeValuePath = ipPrefix + OutputPath + "-" + String.valueOf(IterationNum - 1);
+                    if (checkIfContainsError(ChangeValuePath)) {
+                        HDFS_IO.ReadNWrite.hdfs_delete(ipPrefix + pathPrefix);
+                        HDFS_IO.ReadNWrite.hdfs_createDir(ipPrefix + pathPrefix);
+                        break;
+                    } else {
+                        BPTrain.getNewANN_Usual(oldANNPath, ChangeValuePath, newANNPath);
+                        conf.set("ThisIterationPath", newANNPath);
+                    }
+                }
+                //Set job configs
+                String outPath = OutputPath + "-" + String.valueOf(IterationNum);
+                Job job = BPTrain.getBayRegBP_SettedJob(conf, IterationNum, TimeNow, InputPath, outPath);
+                //hand in the job
+                job.waitForCompletion(true);
             }
-            //Set job configs
-            String outPath = OutputPath + "-" + String.valueOf(IterationNum);
-            Job job = BPTrain.getBayRegBP_SettedJob(conf, IterationNum, TimeNow, InputPath, outPath);
-            //hand in the job
-            job.waitForCompletion(true);
         }
-
     }
 
     public static void main(String[] args) throws Exception {
         String ipPrefix = "hdfs://Master:9000";
 
-        int RunFucCode = Integer.parseInt(args[2]);
-        int TotalIterationNum = Integer.parseInt(args[3]);
+        int RunFucCode = Integer.parseInt(args[0]);
+        int TotalIterationNum = Integer.parseInt(args[1]);
+        String OutputPath = args[2];
+        String[] InputPath = new String[args.length - 3];
+        int j = 0;
+        for (int i = 3; i < args.length; i++, j++) {
+            InputPath[j] = args[i];
+        }
 
 //        int InputNum = 41;
 //        int LayerNum = 3;
 //        int[] NumEachLayer = {7, 10, 1};
 //        int[] IndexEachLayer = {1, 4, 4};
         int InputNum = 1;
-        int LayerNum = 2;
-        int[] NumEachLayer = {2,1};
-        int[] IndexEachLayer = {1, 3};
+        int LayerNum = 3;
+        int[] NumEachLayer = {5, 7, 1};
+        int[] IndexEachLayer = {1, 1, 3};
 
         ArtificialNeuralNetwork InitialANN = new ArtificialNeuralNetwork(InputNum, LayerNum, NumEachLayer, IndexEachLayer);
 
         if (RunFucCode == 0) {
-            BPTrain.run_SDBP_Usual(InitialANN, ipPrefix, args[0], args[1], TotalIterationNum);
+            BPTrain.run_SDBP_Usual(InitialANN, ipPrefix, InputPath, OutputPath, TotalIterationNum);
         } else if (RunFucCode == 1) {
-            BPTrain.run_SDBP_Momentum(InitialANN, ipPrefix, args[0], args[1], TotalIterationNum, 0.8);
+            BPTrain.run_SDBP_Momentum(InitialANN, ipPrefix, InputPath, OutputPath, TotalIterationNum, 0.8);
         } else if (RunFucCode == 2) {
-            BPTrain.run_SDBP_MomentumVL(InitialANN, ipPrefix, args[0], args[1], TotalIterationNum, 0.8, 1.05, 0.7, 0.04);
+            BPTrain.run_SDBP_MomentumVL(InitialANN, ipPrefix, InputPath, OutputPath, TotalIterationNum, 0.8, 1.05, 0.7, 0.04);
         } else if (RunFucCode == 3) {
-            BPTrain.run_CGBP(InitialANN, ipPrefix, args[0], args[1], TotalIterationNum);
-        } else if (RunFucCode == 4 ){
-            BPTrain.run_LMBP(InitialANN, ipPrefix, args[0], args[1], TotalIterationNum);
-        } else{
-            BPTrain.run_BayRegBPTrain(InitialANN, ipPrefix, args[0], args[1], TotalIterationNum);
+            BPTrain.run_CGBP(InitialANN, ipPrefix, InputPath, OutputPath, TotalIterationNum);
+        } else if (RunFucCode == 4) {
+            BPTrain.run_LMBP(InputNum, LayerNum, NumEachLayer, IndexEachLayer, ipPrefix, InputPath, OutputPath, TotalIterationNum);
+        } else if (RunFucCode == 5) {
+            BPTrain.run_BayRegBPTrain(InputNum, LayerNum, NumEachLayer, IndexEachLayer, ipPrefix, InputPath, OutputPath, TotalIterationNum);
+        } else if (RunFucCode == 6) {
+            BPTrain.run_SDBP_MomentumVL_Validation(InitialANN, ipPrefix, InputPath, OutputPath, TotalIterationNum, 0, 1.05, 0.7, 0.04);
         }
-        //BPTrain.run_SDBP_MomentumVL(InitialANN, ipPrefix, args[0], args[1], TotalIterationNum, 0.8, 1.05, 0.7, 0.04);
-        //BPTrain.run_CGBP(InitialANN, ipPrefix, args[0], args[1], TotalIterationNum);
-
-//        for (; IterationNum < TotalIterationNum; IterationNum++) {
-//            Configuration conf = new Configuration();
-//
-//            if (IterationNum >= 2) {
-//                String oldANNPath = ipPrefix + pathPrefix + "/testANN" + String.valueOf(IterationNum - 1);
-//                String newANNPath = ipPrefix + pathPrefix + "/testANN" + String.valueOf(IterationNum);
-//                String ChangeValuePath = ipPrefix + args[1] + "-" + String.valueOf(IterationNum - 1);
-//                String LastChangePath = ipPrefix + args[1] + "-" + String.valueOf(IterationNum - 2);
-//
-//                ThisIterationError = BPTrain.getNewANN_Momentum(oldANNPath, ChangeValuePath, newANNPath, LastChangePath, 0.8);
-//                conf.set("ThisIterationPath", newANNPath);
-//
-//            } else if (IterationNum == 0) {
-//                int InputNum = 1;
-//                int LayerNum = 2;
-//                int[] NumEachLayer = {2, 1};
-//                int[] IndexEachLayer = {1, 3};
-//
-//                ArtificialNeuralNetwork InitialANN = new ArtificialNeuralNetwork(InputNum, LayerNum, NumEachLayer, IndexEachLayer);
-//                ReadNWrite.hdfs_Write(InitialANN.saveANN(), ipPrefix + pathPrefix + "/testANN0");
-//                conf.set("ThisIterationPath", ipPrefix + pathPrefix + "/testANN0");
-//            } else {
-//                String oldANNPath = ipPrefix + pathPrefix + "/testANN" + String.valueOf(IterationNum - 1);
-//                String newANNPath = ipPrefix + pathPrefix + "/testANN" + String.valueOf(IterationNum);
-//                String ChangeValuePath = ipPrefix + args[1] + "-" + String.valueOf(IterationNum - 1);
-//
-//                ThisIterationError = BPTrain.getNewANN_Usual(oldANNPath, ChangeValuePath, newANNPath);
-//                conf.set("ThisIterationPath", newANNPath);
-//            }
-//
-//            //Set job configs
-//            Job job = getSettedJob(conf, IterationNum);
-//            FileInputFormat.addInputPath(job, new Path(args[0]));
-//
-//            String outPath = args[1] + "-" + String.valueOf(IterationNum);
-//            FileOutputFormat.setOutputPath(job, new Path(outPath));
-//
-//            job.waitForCompletion(true);
-//
-//            LastIterationError = ThisIterationError;
-//        }
     }
 
 }

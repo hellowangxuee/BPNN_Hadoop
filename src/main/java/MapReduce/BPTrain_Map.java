@@ -3,6 +3,7 @@ package MapReduce;
 import Jampack.*;
 import org.apache.commons.io.IOExceptionWithCause;
 import org.apache.commons.math3.geometry.Vector;
+import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
@@ -40,64 +41,81 @@ public class BPTrain_Map extends
     private Text Windex = new Text();
     private Text Bindex = new Text();
     private String ANN_path = "";
-    private double learning_rate=0.2;
+    private double learning_rate = 0.1;
 
     protected void getANNPath(Context context) throws IOException, InterruptedException {
         Configuration conf = context.getConfiguration();
         this.ANN_path = conf.get("ThisIterationPath");
-        this.learning_rate=conf.getDouble("LearningRate",0.2);
+        this.learning_rate = conf.getDouble("LearningRate", 0.1);
     }
 
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
-
         getANNPath(context);
-
         //pure text to String
         String line = value.toString();
-
-        // 将输入的数据首先按行进行分割
-        StringTokenizer tokenizerArticle = new StringTokenizer(line, "\n");
+        String[] LineDataArr = line.split(";");
 
         //establish a ANN from existing file
         ArtificialNeuralNetwork TrainingANN = new ArtificialNeuralNetwork(ANN_path);
+        ArtificialNeuralNetwork TotalSDUpdates = new ArtificialNeuralNetwork(TrainingANN.getANN());
+        TotalSDUpdates.clearNetwork();
+        int ParaNum = 0;
+        for (int i = 0; i < TrainingANN.getLayerNum(); i++) {
+            ParaNum += TrainingANN.getANN()[i].getNeuronNum() * (TrainingANN.getANN()[i].getInputNum() + 1);
+        }
 
-        //Data+Tag,transfer them into double
-        while (tokenizerArticle.hasMoreElements()) {
-            String[] DataArr = tokenizerArticle.nextToken().split("\t");
+        double[][] ErrVec = new double[TrainingANN.getOutputNum()][1];
+        double[][] ForwardResult = null;
+
+        double SquareError = 0.0;
+        for (int EntryNum = 0; EntryNum < LineDataArr.length; EntryNum++) {
+            String[] DataArr = LineDataArr[EntryNum].split("\t");
             double Tag = Double.parseDouble(DataArr[DataArr.length - 1]);
             double[][] InputVec = new double[DataArr.length - 1][1];
             for (int i = 0; i < DataArr.length - 1; i++) {
                 InputVec[i][0] = Double.parseDouble(DataArr[i]);
             }
-
-            double[][] ForwardResult = TrainingANN.getForwardResult(InputVec);
-            double[][] ErrVec = new double[ForwardResult.length][1];
-
-            ErrVec[0][0] = Tag - ForwardResult[0][0];
-
-            NeuronLayer[] WeightChangeArr = TrainingANN.getSDBackwardUpdates(ErrVec, learning_rate);
-
-            for (int i = 0; i < WeightChangeArr.length; i++) {
-                for (int j = 0; j < WeightChangeArr[i].getNeuronNum(); j++) {
-                    for (int k = 0; k < WeightChangeArr[i].getInputNum(); k++) {
-                        String WeightIndex = "W-" + String.valueOf(i) + "-";
-                        WeightIndex += String.valueOf(j) + "-" + String.valueOf(k);
-                        Windex.set(WeightIndex);
-                        context.write(Windex, new DoubleWritable(WeightChangeArr[i].getCertainWeight(j, k)));
-                    }
-                }
-            }
-
-            for (int i = 0; i < WeightChangeArr.length; i++) {
-                for (int j = 0; j < WeightChangeArr[i].getNeuronNum(); j++) {
-                    String BiasIndex = "B-" + String.valueOf(i) + "-";
-                    BiasIndex += String.valueOf(j);
-                    Bindex.set(BiasIndex);
-                    context.write(Bindex, new DoubleWritable(WeightChangeArr[i].getCertainBias(j)));
-                }
-            }
-            context.write(new Text("SquareError"), new DoubleWritable(ErrVec[0][0] * ErrVec[0][0]));
+            ForwardResult = TrainingANN.getForwardResult(InputVec);
+            SquareError += (Tag - ForwardResult[0][0]) * (Tag - ForwardResult[0][0]);
         }
+        context.write(new Text("SquareError"), new DoubleWritable(SquareError / LineDataArr.length));
+
+        for (int Ite = 0; Ite < ParaNum; Ite++) {
+            for (int EntryNum = 0; EntryNum < LineDataArr.length; EntryNum++) {
+                String[] DataArr = LineDataArr[EntryNum].split("\t");
+                double Tag = Double.parseDouble(DataArr[DataArr.length - 1]);
+                double[][] InputVec = new double[DataArr.length - 1][1];
+                for (int i = 0; i < DataArr.length - 1; i++) {
+                    InputVec[i][0] = Double.parseDouble(DataArr[i]);
+                }
+                ForwardResult = TrainingANN.getForwardResult(InputVec);
+                ErrVec[0][0] = Tag - ForwardResult[0][0];
+                NeuronLayer[] WeightChangeArr = TrainingANN.getSDBackwardUpdates(ErrVec, learning_rate);
+                TrainingANN.updateWeightNetwork(WeightChangeArr);
+                TotalSDUpdates.updateWeightNetwork(WeightChangeArr);
+            }
+        }
+        for (int i = 0; i < TotalSDUpdates.getANN().length; i++) {
+            for (int j = 0; j < TotalSDUpdates.getANN()[i].getNeuronNum(); j++) {
+                for (int k = 0; k < TotalSDUpdates.getANN()[i].getInputNum(); k++) {
+                    String WeightIndex = "W-" + String.valueOf(i) + "-";
+                    WeightIndex += String.valueOf(j) + "-" + String.valueOf(k);
+                    Windex.set(WeightIndex);
+                    context.write(Windex, new DoubleWritable(TotalSDUpdates.getANN()[i].getCertainWeight(j, k)));
+                }
+            }
+        }
+
+        for (int i = 0; i < TotalSDUpdates.getANN().length; i++) {
+            for (int j = 0; j < TotalSDUpdates.getANN()[i].getNeuronNum(); j++) {
+                String BiasIndex = "B-" + String.valueOf(i) + "-";
+                BiasIndex += String.valueOf(j);
+                Bindex.set(BiasIndex);
+                context.write(Bindex, new DoubleWritable(TotalSDUpdates.getANN()[i].getCertainBias(j)));
+            }
+        }
+        //context.write(new Text("SquareError"), new DoubleWritable(ErrVec[0][0] * ErrVec[0][0]));
     }
 }
+
