@@ -267,6 +267,10 @@ public class ArtificialNeuralNetwork implements Serializable {
         }
     }
 
+    public void clearTempResult(){
+        this.TempReult.clear();
+    }
+
     public boolean updateWeightNetwork(NeuronLayer[] ChangeAmount) {
         try {
             for (int i = 0; i < ANN.length; i++) {

@@ -13,6 +13,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec;
 import org.mortbay.jetty.HttpParser;
 
+import javax.swing.text.html.HTML;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
@@ -25,36 +26,40 @@ import static FileIO.FileReadNWrite.readTxtFile;
  */
 public class test2 {
     public static void main(String[] args) throws JampackException, IOException {
-//
-////        for(double Threshold=0.001;Threshold<0.5;Threshold+=0.001) {
-//////            int NormalRightNum=0;
-//////            int NormalWrongNum=0;
-//////            int Fault1RightNum=0;
-//////            int Fault1WrongNum=0;
-////            int RightNum=0;
-////            int WrongNum=0;
-////            for (int i = 0; i < InputPair.size(); i++) {
-////                temp = (double[]) (InputPair.get(i));
-////                for (int k = 0; k < temp.length - 1; k++) {
-////                    InputVec[k][0] = temp[k];
-////                }
-////                ForwardResult = fANN.getForwardResult(InputVec);
-////                int TrueFlag=(int)(temp[temp.length-1]);
-////                int PreFlag=0;
-////                if(ForwardResult[0][0]>=Threshold){
-////                    PreFlag=1;
-////                }
-////                if(TrueFlag==PreFlag){
-////                    RightNum+=1;
-////                }
-////                else{
-////                    WrongNum+=1;
-////                }
-//////                System.out.println(String.valueOf(i) + "\t" + String.valueOf(temp[temp.length - 1]) + "\t" + String.valueOf(ForwardResult[0][0]));
-////            }
-////            double Accuracy=(double)(RightNum)/(RightNum+WrongNum);
-////            System.out.println(String.valueOf(Threshold)+"\t"+String.valueOf(Accuracy));
-////        }
+        Vector<Double[]> InputPair = readTxtFile("/home/mlx/Documents/DataSet/DIS_TEP_TestData");
+        System.out.println(InputPair.size());
+        int InputNum = 41;
+        double[][] InputVec = new double[InputNum][1];
+        double[][] ForwardResult = null;
+        Double[] temp = null;
+
+        ArtificialNeuralNetwork fANN = new ArtificialNeuralNetwork("hdfs://Master:9000/TEP_Classify/TEP_moVLBP-v2/result_ANN-22");
+        double[] PreResult = new double[InputPair.size()];
+        double[] TagArr = new double[InputPair.size()];
+        for (int i = 0; i < InputPair.size(); i++) {
+            temp = (InputPair.get(i));
+            double Tag = temp[temp.length - 1];
+            for (int k = 0; k < temp.length - 1; k++) {
+                InputVec[k][0] = temp[k];
+            }
+            ForwardResult = fANN.getForwardResult(InputVec);
+            PreResult[i] = ForwardResult[0][0];
+            TagArr[i] = Tag;
+            fANN.clearTempResult();
+        }
+        for (double Threshold = 0.0; Threshold < 1.1; Threshold += 0.01) {
+            int RightNum = 0;
+            int WrongNum = 0;
+            for (int k = 0; k < InputPair.size(); k++) {
+                if ((PreResult[k] >= Threshold && TagArr[k] == 1.0) || (PreResult[k] < Threshold && TagArr[k] == 0.0)) {
+                    RightNum++;
+                } else {
+                    WrongNum++;
+                }
+            }
+            double Accuracy = (double) (RightNum) / (RightNum + WrongNum);
+            System.out.println(String.valueOf(Threshold) + "\t" + String.valueOf(Accuracy));
+        }
 //
 ////        double Accuracy=getAccuracy(fANN,"/home/mlx/Documents/TestingDataset",0.05);
 ////        System.out.println(String.valueOf(0.05)+"\t"+String.valueOf(Accuracy));
@@ -269,23 +274,22 @@ public class test2 {
 //                break;
 //            }
 //        }
-        Vector<Double[]> InputPair = readTxtFile("/home/mlx/Documents/DataSet/FuncValidationData");
-        String TotalInput="";
-        for(int i=0;i<InputPair.size();i++){
-            Double[] temp = (InputPair.get(i));
-            for(int j=0;j<temp.length;j++){
-                if(j!=temp.length-1) {
-                    TotalInput += String.valueOf(temp[j]) + "\t";
-                }
-                else{
-                    TotalInput += String.valueOf(temp[j]);
-                }
-            }
-            TotalInput+=";";
-        }
-        String[] n=new String[1];
-        n[0]=TotalInput;
-        FileReadNWrite.LocalWriteFile("/home/mlx/Documents/DataSet/FuncValidationData-",n);
+//        Vector<Double[]> InputPair = readTxtFile("/home/mlx/Documents/DataSet/DIS_TEP_TrainData_part2");
+//        String[] n=new String[1];
+//        for(int i=0;i<InputPair.size();i++) {
+//            String TotalInput="";
+//            Double[] temp = (InputPair.get(i));
+//            for (int j = 0; j < temp.length; j++) {
+//                if (j != temp.length - 1) {
+//                    TotalInput += String.valueOf(temp[j]) + "\t";
+//                } else {
+//                    TotalInput += String.valueOf(temp[j]);
+//                }
+//            }
+//            TotalInput += ";";
+//            n[0]=TotalInput;
+//            //int Random=getRandomNum(9,16);
+//            FileReadNWrite.LocalWriteFile_NoNewLine("/home/mlx/Documents/TEP_DataSet/DISTEP_TrainingData_part2",n);
     }
 
     public static double getAccuracy(ArtificialNeuralNetwork testANN, String datasetPath, double Threshold) {
@@ -313,5 +317,8 @@ public class test2 {
         }
         double Accuracy = (double) (RightNum) / (RightNum + WrongNum);
         return Accuracy;
+    }
+    public static int getRandomNum(int m,int n) {
+        return (m + (int) (Math.random() * (n - m + 1)));
     }
 }

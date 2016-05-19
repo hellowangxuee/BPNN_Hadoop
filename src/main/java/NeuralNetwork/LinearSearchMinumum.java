@@ -47,6 +47,8 @@ public class LinearSearchMinumum {
 
             ErrSum_a += Math.pow(((Double[]) (InputDataVec.get(i)))[InitalANN.getInputNum()] - ForwardResult1[0][0],2) ;
             ErrSum_b += Math.pow(((Double[]) (InputDataVec.get(i)))[InitalANN.getInputNum()] - ForwardResult2[0][0],2) ;
+            InitalANN.clearTempResult();
+            testANN.clearTempResult();
         }
 
         for (int i = 1; ErrSum_a >= ErrSum_b; i++) {
@@ -65,6 +67,7 @@ public class LinearSearchMinumum {
                 }
                 double[][] ForwardResult2 = testANN.getForwardResult(InputVec);
                 ErrSum_b += Math.pow(((Double[]) (InputDataVec.get(k)))[InitalANN.getInputNum()] - ForwardResult2[0][0],2) ;
+                testANN.clearTempResult();
             }
         }
         IntervalLoation[0]=LastStartPoint;
@@ -102,6 +105,8 @@ public class LinearSearchMinumum {
 
             ErrSum_c += Math.pow(((Double[]) (InputDataVec.get(i)))[InitalANN.getInputNum()] - ForwardResult1[0][0], 2);
             ErrSum_d += Math.pow(((Double[]) (InputDataVec.get(i)))[InitalANN.getInputNum()] - ForwardResult2[0][0], 2);
+            testANN_left.clearTempResult();
+            testANN_right.clearTempResult();
         }
 //
 //        ErrVec_c[0][0] = Tag - testANN_left.getForwardResult(InputVec)[0][0];
@@ -126,6 +131,7 @@ public class LinearSearchMinumum {
                     }
                     double[][] ForwardResult1 = testANN_left.getForwardResult(InputVec);
                     ErrSum_c += Math.pow(((Double[]) (InputDataVec.get(i)))[InitalANN.getInputNum()] - ForwardResult1[0][0], 2);
+                    testANN_left.clearTempResult();
                 }
             } else {
                 left_point = bet_point_left;
@@ -143,6 +149,7 @@ public class LinearSearchMinumum {
                     }
                     double[][] ForwardResult2 = testANN_right.getForwardResult(InputVec);
                     ErrSum_d += Math.pow(((Double[]) (InputDataVec.get(i)))[InitalANN.getInputNum()] - ForwardResult2[0][0], 2);
+                    testANN_right.clearTempResult();
                 }
             }
         }

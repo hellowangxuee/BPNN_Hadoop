@@ -15,7 +15,7 @@ import static FileIO.FileReadNWrite.readTxtFile;
  */
 public class TEP_MOVLBP {
     public static void main(String[] args) throws JampackException, IOException {
-        Vector<Double[]> TrainData = readTxtFile("/home/mlx/Documents/DataSet/TEP_TrainData");
+        Vector<Double[]> TrainData = readTxtFile("/home/mlx/Documents/DataSet/DIS_TEP_TrainData_part1");
         Vector<Double[]> TestData = readTxtFile("/home/mlx/Documents/DataSet/TEP_TestData");
 
         int InputNum = 41;

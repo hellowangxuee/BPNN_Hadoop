@@ -59,7 +59,7 @@ public class BPTrain {
         FileInputFormat.addInputPath(job, new Path(Input));
         FileOutputFormat.setOutputPath(job, new Path(Output));
 
-        job.setNumReduceTasks(1);
+        job.setNumReduceTasks(5);
 
         return job;
     }
@@ -84,7 +84,7 @@ public class BPTrain {
             MultipleInputs.addInputPath(job, new Path(Input[i]), TextInputFormat.class, BayRegBPTrain_Map.class);
         }
         FileOutputFormat.setOutputPath(job, new Path(Output));
-        job.setNumReduceTasks(1);
+        job.setNumReduceTasks(5);
         return job;
     }
 
@@ -108,7 +108,7 @@ public class BPTrain {
             MultipleInputs.addInputPath(job, new Path(Input[i]), TextInputFormat.class, LMBPTrain_Map.class);
         }
         FileOutputFormat.setOutputPath(job, new Path(Output));
-        job.setNumReduceTasks(1);
+        job.setNumReduceTasks(5);
         return job;
     }
 
@@ -131,7 +131,7 @@ public class BPTrain {
             MultipleInputs.addInputPath(job, new Path(Input[i]), TextInputFormat.class, CGBPTrain_Map.class);
         }
         FileOutputFormat.setOutputPath(job, new Path(Output));
-        job.setNumReduceTasks(1);
+        job.setNumReduceTasks(5);
         return job;
     }
 
@@ -154,7 +154,30 @@ public class BPTrain {
             MultipleInputs.addInputPath(job, new Path(Input[i]), TextInputFormat.class, BPTrain_Map.class);
         }
         FileOutputFormat.setOutputPath(job, new Path(Output));
-        job.setNumReduceTasks(1);
+        job.setNumReduceTasks(5);
+        return job;
+    }
+
+    private static Job getMOVLBP_SettedJob(Configuration conf, int IterationNum, String Time, String[] Input, String Output) throws Exception {
+        Job job = new Job(conf);
+        job.setJarByClass(BPTrain.class);
+        job.setJobName("MOVLBPTrain" + String.valueOf(IterationNum) + "~" + Time);
+
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(DoubleWritable.class);
+        job.setOutputFormatClass(TextOutputFormat.class);
+        job.setReducerClass(VLBPTrain_Reduce.class);
+
+        job.setMapOutputKeyClass(Text.class);
+        job.setMapOutputValueClass(DoubleWritable.class);
+//        job.setMapperClass(BayRegBPTrain_Map.class);
+//        job.setInputFormatClass(TextInputFormat.class);
+//        FileInputFormat.addInputPath(job, new Path(Input[0]));
+        for (int i = 0; i < Input.length; i++) {
+            MultipleInputs.addInputPath(job, new Path(Input[i]), TextInputFormat.class, VLBPTrain_Map.class);
+        }
+        FileOutputFormat.setOutputPath(job, new Path(Output));
+        job.setNumReduceTasks(5);
         return job;
     }
 
@@ -444,6 +467,49 @@ public class BPTrain {
         }
     }
 
+    private static void run_MOVLBP(ArtificialNeuralNetwork InitialANN, String ipPrefix,
+                                            String[] InputPath, String OutputPath,
+                                            int MaxIterationNum, double Momentum, double eta, double rho, double ksi)
+            throws Exception {
+        String[] pathArr = OutputPath.split("/");
+        String pathPrefix = "";
+        for (int i = 1; i < pathArr.length - 1; i++) {
+            pathPrefix += "/" + pathArr[i];
+        }
+        for (int IterationNum = 0; IterationNum < MaxIterationNum; IterationNum++) {
+            Configuration conf = new Configuration();
+
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");//设置日期格式
+            String TimeNow = df.format(new Date());
+
+            if (IterationNum == 0) {
+                //ArtificialNeuralNetwork NewIntialANN=new ArtificialNeuralNetwork("hdfs://Master:9000/TEP_Classify/TEP_MOVLBP-v4/result_ANN-149");
+                ReadNWrite.hdfs_Write(InitialANN.saveANN(), ipPrefix + pathPrefix + "/result_ANN-0");
+                conf.set("ThisIterationPath", ipPrefix + pathPrefix + "/result_ANN-0");
+                conf.setDouble("Momentum",Momentum);
+                conf.setDouble("eta",eta);
+                conf.setDouble("rho",rho);
+                conf.setDouble("ksi",ksi);
+            } else {
+                String oldANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum - 1);
+                String newANNPath = ipPrefix + pathPrefix + "/result_ANN-" + String.valueOf(IterationNum);
+                String ChangeValuePath = ipPrefix + OutputPath + "-" + String.valueOf(IterationNum - 1);
+
+                BPTrain.getNewANN_Usual(oldANNPath, ChangeValuePath, newANNPath);
+                conf.set("ThisIterationPath", newANNPath);
+                conf.setDouble("Momentum",Momentum);
+                conf.setDouble("eta",eta);
+                conf.setDouble("rho",rho);
+                conf.setDouble("ksi",ksi);
+            }
+            //Set job configs
+            String outPath = OutputPath + "-" + String.valueOf(IterationNum);
+            Job job = BPTrain.getMOVLBP_SettedJob(conf, IterationNum, TimeNow, InputPath, outPath);
+            //hand in the job
+            job.waitForCompletion(true);
+        }
+    }
+
     private static void run_SDBP_MomentumVL(ArtificialNeuralNetwork InitialANN, String ipPrefix,
                                             String[] InputPath, String OutputPath,
                                             int MaxIterationNum, double Momentum, double eta, double rho, double ksi)
@@ -456,7 +522,7 @@ public class BPTrain {
         double thisIteSE = 0.0;
         double lastIteSE = 0.0;
 
-        double VaryingLearningRate = 0.2;
+        double VaryingLearningRate = 0.05;
         double VaryingMomentum;
 
         for (int IterationNum = 0; IterationNum < MaxIterationNum; IterationNum++) {
@@ -491,6 +557,7 @@ public class BPTrain {
                     conf.set("ThisIterationPath", newANNPath);
                     VaryingLearningRate *= rho;
                     conf.set("LearningRate", String.valueOf(VaryingLearningRate));
+                    conf.set("Momentum", String.valueOf(0));
                 } else {
                     String LastChangePath = ipPrefix + OutputPath + "-" + String.valueOf(IterationNum - 2);
                     VaryingMomentum = Momentum;
@@ -752,10 +819,10 @@ public class BPTrain {
 //        int LayerNum = 3;
 //        int[] NumEachLayer = {7, 10, 1};
 //        int[] IndexEachLayer = {1, 4, 4};
-        int InputNum = 1;
+        int InputNum = 41;
         int LayerNum = 3;
-        int[] NumEachLayer = {5, 7, 1};
-        int[] IndexEachLayer = {1, 1, 3};
+        int[] NumEachLayer = {7, 10, 1};
+        int[] IndexEachLayer = {1, 4, 4};
 
         ArtificialNeuralNetwork InitialANN = new ArtificialNeuralNetwork(InputNum, LayerNum, NumEachLayer, IndexEachLayer);
 
@@ -764,7 +831,7 @@ public class BPTrain {
         } else if (RunFucCode == 1) {
             BPTrain.run_SDBP_Momentum(InitialANN, ipPrefix, InputPath, OutputPath, TotalIterationNum, 0.8);
         } else if (RunFucCode == 2) {
-            BPTrain.run_SDBP_MomentumVL(InitialANN, ipPrefix, InputPath, OutputPath, TotalIterationNum, 0.8, 1.05, 0.7, 0.04);
+            BPTrain.run_MOVLBP(InitialANN, ipPrefix, InputPath, OutputPath, TotalIterationNum, 0.65, 1.05, 0.85, 0.2);
         } else if (RunFucCode == 3) {
             BPTrain.run_CGBP(InitialANN, ipPrefix, InputPath, OutputPath, TotalIterationNum);
         } else if (RunFucCode == 4) {

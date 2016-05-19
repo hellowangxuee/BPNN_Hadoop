@@ -22,7 +22,7 @@ public class BayRegBPTrain_Map extends
     private Text Windex = new Text();
     private Text Bindex = new Text();
     private String ANN_path = "";
-    private double MSE_upperbound = 0.001;
+    private double MSE_upperbound = 0.01;
 
     protected void getANNPath(Context context) throws IOException, InterruptedException {
         Configuration conf = context.getConfiguration();

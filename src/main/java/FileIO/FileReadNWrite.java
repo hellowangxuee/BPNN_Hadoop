@@ -50,6 +50,21 @@ public class FileReadNWrite {
         }
 
     }
+    public static void LocalWriteFile_NoNewLine(String filePath,String[] content) throws IOException{
+        try {
+            //打开一个写文件器，构造函数中的第二个参数true表示以追加形式写文件
+            FileWriter writer = new FileWriter(filePath, true);
+            for(int i=0;i<content.length;i++) {
+                if (content[i]!=null) {
+                    writer.write(content[i]);
+                }
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
     public static Vector LocalReadFile(String filePath){
         Vector vet = new Vector();
         try {

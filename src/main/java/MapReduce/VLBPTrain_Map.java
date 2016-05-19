@@ -1,41 +1,19 @@
 package MapReduce;
 
-import Jampack.*;
-import org.apache.commons.io.IOExceptionWithCause;
-import org.apache.commons.math3.geometry.Vector;
-import org.apache.commons.math3.geometry.euclidean.threed.Line;
+import NeuralNetwork.ArtificialNeuralNetwork;
+import NeuralNetwork.NeuronLayer;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.JobConfigurable;
-import org.apache.hadoop.mapred.MapReduceBase;
-import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.mapreduce.lib.join.StreamBackedIterator;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.net.URLDecoder;
-import java.util.StringTokenizer;
-
-import NeuralNetwork.*;
-import FileIO.*;
-import org.apache.jasper.JasperException;
 
 /**
- * Created by Jackie on 16/3/3.
+ * Created by mlx on 5/18/16.
  */
-public class BPTrain_Map extends
+public class VLBPTrain_Map extends
         Mapper<LongWritable, Text, Text, DoubleWritable> {
 
     private Text Windex = new Text();
@@ -43,17 +21,24 @@ public class BPTrain_Map extends
     private String ANN_path = "";
     private double learning_rate = 0.1;
     private double MSE_upperbound = 0.01;
+    private double rho=0.7;
+    private double ksi=0.04;
+    private double eta=1.05;
+    private double Momentum=0.65;
 
     protected void getANNPath(Context context) throws IOException, InterruptedException {
         Configuration conf = context.getConfiguration();
         this.ANN_path = conf.get("ThisIterationPath");
         this.learning_rate = conf.getDouble("LearningRate", 0.1);
+        this.rho=conf.getDouble("rho",0.7);
+        this.ksi=conf.getDouble("ksi",0.04);
+        this.eta=conf.getDouble("eta",1.05);
+        this.Momentum=conf.getDouble("Momentum",0.65);
     }
 
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
         getANNPath(context);
-        System.out.println(this.learning_rate);
         //pure text to String
         String line = value.toString();
         String[] LineDataArr = line.split(";");
@@ -61,14 +46,17 @@ public class BPTrain_Map extends
         //establish a ANN from existing file
         ArtificialNeuralNetwork TrainingANN = new ArtificialNeuralNetwork(ANN_path);
         ArtificialNeuralNetwork TotalSDUpdates = new ArtificialNeuralNetwork(TrainingANN.getANN());
+        ArtificialNeuralNetwork BatchStore = new ArtificialNeuralNetwork(TrainingANN.getANN());
         TotalSDUpdates.clearNetwork();
-        int ParaNum = 0;
-        for (int i = 0; i < TrainingANN.getLayerNum(); i++) {
-            ParaNum += TrainingANN.getANN()[i].getNeuronNum() * (TrainingANN.getANN()[i].getInputNum() + 1);
-        }
 
         double[][] ErrVec = new double[TrainingANN.getOutputNum()][1];
         double[][] ForwardResult = null;
+        NeuronLayer[] LastUpdate = null;
+        ArtificialNeuralNetwork SynthesisUpdate = null;
+
+        double ThisIteMSE = 0.0;
+        double LastIteMSE = 0.0;
+        double MomentumValue=Momentum;
 
         double SquareError = 0.0;
         for (int EntryNum = 0; EntryNum < LineDataArr.length; EntryNum++) {
@@ -83,8 +71,10 @@ public class BPTrain_Map extends
             TrainingANN.clearTempResult();
         }
         context.write(new Text("SquareError"), new DoubleWritable(SquareError / LineDataArr.length));
-        if (SquareError / LineDataArr.length >= MSE_upperbound) {
+        if(SquareError / LineDataArr.length >= MSE_upperbound) {
             for (int Ite = 0; Ite < 20; Ite++) {
+                double SquareErr = 0.0;
+                BatchStore.clearNetwork();
                 for (int EntryNum = 0; EntryNum < LineDataArr.length; EntryNum++) {
                     String[] DataArr = LineDataArr[EntryNum].split("\t");
                     double Tag = Double.parseDouble(DataArr[DataArr.length - 1]);
@@ -94,9 +84,58 @@ public class BPTrain_Map extends
                     }
                     ForwardResult = TrainingANN.getForwardResult(InputVec);
                     ErrVec[0][0] = Tag - ForwardResult[0][0];
-                    NeuronLayer[] WeightChangeArr = TrainingANN.getSDBackwardUpdates(ErrVec, learning_rate);
-                    TrainingANN.updateWeightNetwork(WeightChangeArr);
-                    TotalSDUpdates.updateWeightNetwork(WeightChangeArr);
+
+                    NeuronLayer[] ThisUpdate = TrainingANN.getSDBackwardUpdates(ErrVec, learning_rate);
+                    if (EntryNum == 0 || Momentum == 0) {
+                        TrainingANN.updateWeightNetwork(ThisUpdate);
+                        LastUpdate = ThisUpdate;
+                        BatchStore.updateWeightNetwork(ThisUpdate);
+                    } else {
+                        SynthesisUpdate = ArtificialNeuralNetwork.addTwoANN(ArtificialNeuralNetwork.multiplyNeuronLayers(LastUpdate, Momentum), ArtificialNeuralNetwork.multiplyNeuronLayers(ThisUpdate, 1 - Momentum));
+                        TrainingANN.updateWeightNetwork(SynthesisUpdate.getANN());
+                        LastUpdate = SynthesisUpdate.getANN();
+                        BatchStore.updateWeightNetwork(SynthesisUpdate);
+                    }
+                }
+                for (int i = 0; i < LineDataArr.length; i++) {
+                    String[] DataArr = LineDataArr[i].split("\t");
+                    double Tag = Double.parseDouble(DataArr[DataArr.length - 1]);
+                    double[][] InputVec = new double[DataArr.length - 1][1];
+                    for (int j = 0; j < DataArr.length - 1; j++) {
+                        InputVec[j][0] = Double.parseDouble(DataArr[j]);
+                    }
+                    ForwardResult = TrainingANN.getForwardResult(InputVec);
+                    ErrVec[0][0] = Tag - ForwardResult[0][0];
+                    SquareErr += ErrVec[0][0] * ErrVec[0][0];
+                    TrainingANN.clearTempResult();
+                }
+                ThisIteMSE = SquareErr / LineDataArr.length;
+                if (Ite == 0) {
+                    LastIteMSE = ThisIteMSE;
+                } else {
+                    double MSE_VaryRate = (ThisIteMSE - LastIteMSE) / LastIteMSE;
+                    if (MSE_VaryRate > ksi) {
+                        if (ThisIteMSE < 0.05) {
+                            TrainingANN.updateWeightNetwork(ArtificialNeuralNetwork.multiplyNeuronLayers(BatchStore.getANN(), -1));
+                            learning_rate *= rho;
+                            Momentum = 0;
+                            this.ksi=0.05;
+                        } else {
+                            TotalSDUpdates.updateWeightNetwork(BatchStore.getANN());
+                            LastIteMSE = ThisIteMSE;
+                            learning_rate *= rho;
+                            Momentum = 0;
+                        }
+                    } else if (MSE_VaryRate < 0) {
+                        TotalSDUpdates.updateWeightNetwork(BatchStore.getANN());
+                        learning_rate *= eta;
+                        Momentum = MomentumValue;
+                        LastIteMSE = ThisIteMSE;
+                    } else {
+                        TotalSDUpdates.updateWeightNetwork(BatchStore.getANN());
+                        Momentum = MomentumValue;
+                        LastIteMSE = ThisIteMSE;
+                    }
                 }
             }
         }

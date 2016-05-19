@@ -29,7 +29,7 @@ public class CGBPTrain_Map extends
     private Text Windex = new Text();
     private Text Bindex = new Text();
     private String ANN_path = "";
-    private double ErrorUpperBound = 0.001;
+    private double ErrorUpperBound = 0.01;
     private double LeastGradientLength = 1E-6;
 
 
@@ -69,7 +69,7 @@ public class CGBPTrain_Map extends
         double[][] ForwardResult = null;
         double[][] ErrVec = new double[TrainingANN.getOutputNum()][1];
 
-        for (int time = 0; time < ParaNum; time++) {
+        for (int time = 0; time < 20; time++) {
             double SE = 0;
             BatchStore.clearNetwork();
             for (int p = 0; p < InputPair.size(); p++) {

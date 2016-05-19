@@ -1,4 +1,5 @@
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Zdiagmat.java
+/home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/MapReduce/VLBPTrain_Reduce.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Trace.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Zmat.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Zspec.java
@@ -57,6 +58,7 @@
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Merge.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Minus.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/Jampack/Swap.java
+/home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/MapReduce/VLBPTrain_Map.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/TEP_Classification/TEP_SDBP.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/test2.java
 /home/mlx/Desktop/BPNeuralNetwork_Classification/src/main/java/StandAloneNN/SA_SDBP.java

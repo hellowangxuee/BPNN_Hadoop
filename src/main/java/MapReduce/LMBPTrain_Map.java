@@ -28,7 +28,7 @@ public class LMBPTrain_Map extends
     private String ANN_path = "";
     private double miu = 0.01;
     private double MultipliedFactor = 10;
-    private double MSE_upperbound=0.001;
+    private double MSE_upperbound=0.01;
 
     protected void getANNPath(Context context) throws IOException, InterruptedException {
         Configuration conf = context.getConfiguration();
@@ -81,7 +81,7 @@ public class LMBPTrain_Map extends
             }
         }
         try {
-            for (int Ite = 0; MSE > MSE_upperbound && Ite < ParaNum; Ite++) {
+            for (int Ite = 0; MSE > MSE_upperbound && Ite < 20; Ite++) {
                 Zmat H = Times.o(transpose.o(TotalJacobianMatrix), TotalJacobianMatrix);
                 Zmat G = Plus.o(H, Times.o(new Z(miu, 0), Eye.o(H.nr)));
                 Zmat NetworkUpdates = Times.o(new Z(-1, 0), Times.o(Times.o(Inv.o(G), transpose.o(TotalJacobianMatrix)), new Zmat(ErrArr)));
@@ -142,7 +142,7 @@ public class LMBPTrain_Map extends
                     TrainingANN.updateWeightNetwork(ArtificialNeuralNetwork.multiplyNeuronLayers(UpdatesANN.getANN(), -1));
                 }
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.out.println(e.toString());
             context.write(new Text("Error"), new DoubleWritable(-1));
         }

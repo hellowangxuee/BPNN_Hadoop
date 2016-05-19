@@ -19,7 +19,7 @@ public class test3 {
 //            System.out.println(getRandomNum(0, 1));
 //        }
 
-        String PathPrefix = "hdfs://Master:9000/FuncSimu/VLBP_ValidationWithNoise_Func/VLBPValiWithNoise_Func-";
+        String PathPrefix = "hdfs://Master:9000/TEP_Classify/TEP_moVLBP-v2/TEP_moVLBPClassify-";
         for (int i = 0; ; i++) {
             try {
                 String path = PathPrefix + String.valueOf(i);
@@ -29,6 +29,7 @@ public class test3 {
                     break;
                 }
                 System.out.println(String.valueOf(i) + "\t" + String.valueOf(map.get("MeanSquareError")));
+                map.clear();
             }
             catch (Exception E){
                 break;
